@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_attendance_setting_view_list" model="ir.ui.view">
+        <field name="name">hr.attendance.setting.view.list</field>
+        <field name="model">hr.attendance.setting</field>
+        <field name="arch" type="xml">
+            <list string="出勤設定">
+                <field name="name"/>
+                <field name="enable_perfect_attendance"/>
+                <field name="perfect_attendance_amount"/>
+                <field name="grace_minutes"/>
+                <field name="enable_late_deduction"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_attendance_setting_view_form" model="ir.ui.view">
+        <field name="name">hr.attendance.setting.view.form</field>
+        <field name="model">hr.attendance.setting</field>
+        <field name="arch" type="xml">
+            <form string="出勤設定">
+                <sheet>
+                    <group string="基本設定">
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                    <group string="全勤獎金">
+                        <field name="enable_perfect_attendance"/>
+                        <field name="perfect_attendance_amount"
+                               attrs="{'invisible': [('enable_perfect_attendance','=',False)]}"/>
+                        <field name="perfect_attendance_leave_limit"/>
+                        <field name="grace_minutes"/>
+                        <field name="perfect_attendance_late_limit"/>
+                        <field name="no_deduct_on_join"/>
+                        <field name="no_deduct_on_resign"/>
+                    </group>
+                    <group string="遲到早退">
+                        <field name="enable_late_deduction"/>
+                        <field name="leave_required_minutes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_attendance_setting" model="ir.actions.act_window">
+        <field name="name">出勤設定</field>
+        <field name="res_model">hr.attendance.setting</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

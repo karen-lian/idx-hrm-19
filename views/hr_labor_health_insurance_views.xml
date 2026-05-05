@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_labor_health_insurance_type_view_list" model="ir.ui.view">
+        <field name="name">hr.labor.health.insurance.type.view.list</field>
+        <field name="model">hr.labor.health.insurance.type</field>
+        <field name="arch" type="xml">
+            <list string="費率版本">
+                <field name="name"/>
+                <field name="year"/>
+                <field name="insurance_type"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_labor_health_insurance_type_view_form" model="ir.ui.view">
+        <field name="name">hr.labor.health.insurance.type.view.form</field>
+        <field name="model">hr.labor.health.insurance.type</field>
+        <field name="arch" type="xml">
+            <form string="保費費率版本">
+                <sheet>
+                    <group>
+                        <field name="year"/>
+                        <field name="insurance_type"/>
+                        <field name="active"/>
+                    </group>
+                    <notebook>
+                        <page string="等級表">
+                            <field name="grade_ids">
+                                <list editable="bottom">
+                                    <field name="grade"/>
+                                    <field name="insured_salary"/>
+                                    <field name="employee_labor"/>
+                                    <field name="employee_health"/>
+                                    <field name="employer_labor"/>
+                                    <field name="employer_health"/>
+                                    <field name="employer_pension"/>
+                                    <field name="employer_occupational"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_labor_health_insurance_type" model="ir.actions.act_window">
+        <field name="name">勞健保費率等級表</field>
+        <field name="res_model">hr.labor.health.insurance.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

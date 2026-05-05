@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_idx_hrm" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.idx.hrm</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.action_general_configuration"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="IDX HRM 台灣在地化" name="idx_hrm_19">
+                    <block title="勞保費率參數">
+                        <setting>
+                            <field name="labor_min_salary" string="勞保最低投保薪資"/>
+                        </setting>
+                        <setting>
+                            <field name="labor_accident_rate" string="普通事故費率 (%)"/>
+                        </setting>
+                        <setting>
+                            <field name="labor_employment_insurance_rate" string="就業保險費率 (%)"/>
+                        </setting>
+                        <setting>
+                            <field name="labor_employee_ratio" string="員工負擔比例 (%)"/>
+                        </setting>
+                        <setting>
+                            <field name="labor_employer_ratio" string="雇主負擔比例 (%)"/>
+                        </setting>
+                    </block>
+                    <block title="勞退費率參數">
+                        <setting>
+                            <field name="pension_employer_rate" string="雇主提撥率 (%)"/>
+                        </setting>
+                    </block>
+                    <block title="健保費率參數">
+                        <setting>
+                            <field name="health_min_salary" string="健保最低投保薪資"/>
+                        </setting>
+                        <setting>
+                            <field name="health_insurance_rate" string="健保費率 (%)"/>
+                        </setting>
+                        <setting>
+                            <field name="health_employee_ratio" string="員工負擔比例 (%)"/>
+                        </setting>
+                        <setting>
+                            <field name="health_employer_ratio" string="雇主負擔比例 (%)"/>
+                        </setting>
+                        <setting>
+                            <field name="health_supplement_rate" string="補充保費費率 (%)"/>
+                        </setting>
+                    </block>
+                    <block title="居住者所得稅">
+                        <setting>
+                            <field name="resident_tax_method" string="扣繳方式"/>
+                        </setting>
+                        <setting attrs="{'invisible': [('resident_tax_method','!=','fixed')]}">
+                            <field name="resident_fixed_rate" string="固定稅率 (%)"/>
+                        </setting>
+                    </block>
+                    <block title="非居住者所得稅">
+                        <setting>
+                            <field name="non_resident_salary_threshold" string="薪資門檻"/>
+                        </setting>
+                        <setting>
+                            <field name="non_resident_high_rate" string="高薪資稅率 (%)"/>
+                        </setting>
+                        <setting>
+                            <field name="non_resident_normal_rate" string="一般薪資稅率 (%)"/>
+                        </setting>
+                    </block>
+                    <block title="銀行薪轉參數">
+                        <setting>
+                            <field name="tw_bank_unit_code" string="委託單位代號"/>
+                        </setting>
+                        <setting>
+                            <field name="tw_bank_identifier1" string="識別碼 1"/>
+                        </setting>
+                        <setting>
+                            <field name="tw_bank_identifier2" string="識別碼 2"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

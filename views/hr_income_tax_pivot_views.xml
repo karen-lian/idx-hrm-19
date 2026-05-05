@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_income_tax_pivot_view_list" model="ir.ui.view">
+        <field name="name">hr.income.tax.pivot.view.list</field>
+        <field name="model">hr.income.tax.pivot</field>
+        <field name="arch" type="xml">
+            <list string="所得稅扣繳稅額表" editable="bottom">
+                <field name="year"/>
+                <field name="salary_from"/>
+                <field name="salary_to"/>
+                <field name="dependents"/>
+                <field name="tax_amount"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_hr_income_tax_pivot" model="ir.actions.act_window">
+        <field name="name">所得稅扣繳稅額表</field>
+        <field name="res_model">hr.income.tax.pivot</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>
