@@ -16,3 +16,4 @@ from . import hr_attendance_ext
 from . import hr_attendance_abnormal
 from . import hr_leave_ext
 from . import hr_overtime_request
+from . import hr_payslip_ext
