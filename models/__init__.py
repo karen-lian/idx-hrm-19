@@ -17,3 +17,6 @@ from . import hr_attendance_abnormal
 from . import hr_leave_ext
 from . import hr_overtime_request
 from . import hr_payslip_ext
+from . import hr_income_tax_report
+from . import hr_onboarding_offboarding
+from . import hr_holiday_import
