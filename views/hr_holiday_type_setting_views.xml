@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_holiday_type_setting_view_list" model="ir.ui.view">
+        <field name="name">hr.holiday.type.setting.view.list</field>
+        <field name="model">hr.holiday.type.setting</field>
+        <field name="arch" type="xml">
+            <list string="假別政策設定">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="holiday_type_id"/>
+                <field name="pay_ratio"/>
+                <field name="annual_quota_days"/>
+                <field name="allow_carry_over"/>
+                <field name="payslip_rule_code"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_holiday_type_setting_view_form" model="ir.ui.view">
+        <field name="name">hr.holiday.type.setting.view.form</field>
+        <field name="model">hr.holiday.type.setting</field>
+        <field name="arch" type="xml">
+            <form string="假別政策設定">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="holiday_type_id"/>
+                        <field name="payslip_rule_code"/>
+                        <field name="withholding_code"/>
+                        <field name="pay_ratio"/>
+                        <field name="annual_quota_days"/>
+                        <field name="allow_carry_over"/>
+                        <field name="carry_over_limit_days"
+                               attrs="{'invisible': [('allow_carry_over','=',False)]}"/>
+                    </group>
+                    <group string="說明">
+                        <field name="note" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_holiday_type_setting" model="ir.actions.act_window">
+        <field name="name">假別政策設定</field>
+        <field name="res_model">hr.holiday.type.setting</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

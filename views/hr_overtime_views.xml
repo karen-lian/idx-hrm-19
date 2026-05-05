@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_overtime_setting_view_form" model="ir.ui.view">
+        <field name="name">hr.overtime.setting.view.form</field>
+        <field name="model">hr.overtime.setting</field>
+        <field name="arch" type="xml">
+            <form string="加班設定">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="monthly_limit_hours"/>
+                        <field name="daily_limit_hours"/>
+                    </group>
+                    <notebook>
+                        <page string="加班類型費率表">
+                            <field name="overtime_type_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="day_type"/>
+                                    <field name="compensation_type"/>
+                                    <field name="leave_conversion_ratio"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="hr_overtime_type_rule_view_list" model="ir.ui.view">
+        <field name="name">hr.overtime.type.rule.view.list</field>
+        <field name="model">hr.overtime.type.rule</field>
+        <field name="arch" type="xml">
+            <list string="費率規則" editable="bottom">
+                <field name="hour_from"/>
+                <field name="hour_to"/>
+                <field name="rate"/>
+                <field name="is_tax_free"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_hr_overtime_setting" model="ir.actions.act_window">
+        <field name="name">加班設定</field>
+        <field name="res_model">hr.overtime.setting</field>
+        <field name="view_mode">form</field>
+    </record>
+</odoo>

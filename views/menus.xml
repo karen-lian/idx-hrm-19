@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 根選單 -->
+    <menuitem id="menu_idx_hrm_root"
+              name="IDX HRM"
+              sequence="80"/>
+
+    <!-- 系統設定子選單 -->
+    <menuitem id="menu_idx_hrm_config"
+              name="系統設定"
+              parent="menu_idx_hrm_root"
+              sequence="100"/>
+
+    <menuitem id="menu_hr_attendance_setting"
+              name="出勤設定"
+              parent="menu_idx_hrm_config"
+              action="action_hr_attendance_setting"
+              sequence="10"/>
+
+    <menuitem id="menu_hr_late_early_criterion"
+              name="遲到早退扣款標準"
+              parent="menu_idx_hrm_config"
+              action="action_hr_late_early_criterion"
+              sequence="20"/>
+
+    <menuitem id="menu_hr_overtime_setting"
+              name="加班設定"
+              parent="menu_idx_hrm_config"
+              action="action_hr_overtime_setting"
+              sequence="30"/>
+
+    <menuitem id="menu_hr_labor_health_insurance"
+              name="勞健保費率等級表"
+              parent="menu_idx_hrm_config"
+              action="action_hr_labor_health_insurance_type"
+              sequence="40"/>
+
+    <menuitem id="menu_hr_income_tax_pivot"
+              name="所得稅扣繳稅額表"
+              parent="menu_idx_hrm_config"
+              action="action_hr_income_tax_pivot"
+              sequence="50"/>
+
+    <menuitem id="menu_hr_annual_leave"
+              name="特休年資對照表"
+              parent="menu_idx_hrm_config"
+              action="action_hr_annual_leave"
+              sequence="60"/>
+
+    <menuitem id="menu_hr_holiday_type_setting"
+              name="假別政策設定"
+              parent="menu_idx_hrm_config"
+              action="action_hr_holiday_type_setting"
+              sequence="70"/>
+</odoo>
