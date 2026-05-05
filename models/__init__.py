@@ -6,3 +6,4 @@ from . import hr_labor_health_insurance
 from . import hr_income_tax_pivot
 from . import hr_annual_leave
 from . import hr_holiday_type_setting
+from . import cron_methods
