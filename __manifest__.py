@@ -13,7 +13,9 @@
         "mail",
     ],
     "data": [
+        "security/ir_security_groups.xml",
         "security/ir.model.access.csv",
+        "security/ir_record_rules.xml",
         "data/ir_cron.xml",
         "data/hr_leave_type_data.xml",
         "views/res_config_settings_views.xml",

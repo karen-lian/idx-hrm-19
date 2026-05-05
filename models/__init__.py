@@ -20,3 +20,4 @@ from . import hr_payslip_ext
 from . import hr_income_tax_report
 from . import hr_onboarding_offboarding
 from . import hr_holiday_import
+from . import hr_employee_security
