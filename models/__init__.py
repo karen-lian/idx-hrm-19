@@ -12,3 +12,5 @@ from . import hr_employee
 from . import hr_employee_foreign
 from . import hr_contract
 from . import hr_dependents
+from . import hr_attendance_ext
+from . import hr_attendance_abnormal
