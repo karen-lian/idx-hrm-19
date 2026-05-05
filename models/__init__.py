@@ -11,3 +11,4 @@ from . import hr_overtime_calculation
 from . import hr_employee
 from . import hr_employee_foreign
 from . import hr_contract
+from . import hr_dependents

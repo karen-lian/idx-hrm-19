@@ -25,6 +25,7 @@
         "views/hr_holiday_type_setting_views.xml",
         "views/hr_employee_views.xml",
         "views/hr_contract_views.xml",
+        "views/hr_dependents_views.xml",
         "views/menus.xml",
     ],
     "application": False,

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- PR-017/018：健保眷屬表單與清單 -->
+    <record id="view_hr_dependents_form" model="ir.ui.view">
+        <field name="name">hr.dependents.information.form</field>
+        <field name="model">hr.dependents.information</field>
+        <field name="arch" type="xml">
+            <form string="健保眷屬">
+                <sheet>
+                    <group col="2">
+                        <group string="基本資料">
+                            <field name="employee_id"/>
+                            <field name="name"/>
+                            <field name="relationship"/>
+                            <field name="gender"/>
+                            <field name="birthday"/>
+                            <field name="identification_card"/>
+                        </group>
+                        <group string="健保資訊">
+                            <field name="enroll_date"/>
+                            <field name="withdraw_date"/>
+                            <field name="is_active_insured" readonly="1"/>
+                            <field name="health_insurance_premium" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_dependents_tree" model="ir.ui.view">
+        <field name="name">hr.dependents.information.tree</field>
+        <field name="model">hr.dependents.information</field>
+        <field name="arch" type="xml">
+            <tree string="健保眷屬">
+                <field name="employee_id"/>
+                <field name="name"/>
+                <field name="relationship"/>
+                <field name="identification_card"/>
+                <field name="enroll_date"/>
+                <field name="withdraw_date"/>
+                <field name="is_active_insured"/>
+                <field name="health_insurance_premium"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- 嵌入員工表單的眷屬 inline tree -->
+    <record id="view_hr_employee_form_dependents" model="ir.ui.view">
+        <field name="name">hr.employee.form.dependents</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="idx_hrm_19.view_hr_employee_form_idx"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='private_information']" position="inside">
+                <separator string="健保眷屬"/>
+                <field name="active_dependent_count" readonly="1"/>
+                <field name="dependents_information_ids">
+                    <tree editable="bottom">
+                        <field name="sequence" widget="handle"/>
+                        <field name="name"/>
+                        <field name="relationship"/>
+                        <field name="identification_card"/>
+                        <field name="enroll_date"/>
+                        <field name="withdraw_date"/>
+                        <field name="is_active_insured" readonly="1"/>
+                        <field name="health_insurance_premium" readonly="1"/>
+                    </tree>
+                </field>
+            </xpath>
+        </field>
+    </record>
+</odoo>
