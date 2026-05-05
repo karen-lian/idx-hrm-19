@@ -7,3 +7,4 @@ from . import test_hr_income_tax_pivot
 from . import test_hr_annual_leave
 from . import test_hr_holiday_type_setting
 from . import test_cron_methods
+from . import test_overtime_calculation
