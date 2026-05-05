@@ -1,15 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- PR-062~070：IDX HRM 完整選單結構 -->
 <odoo>
-    <!-- 根選單 -->
+    <!-- ============================================================
+         根選單
+    ============================================================ -->
     <menuitem id="menu_idx_hrm_root"
               name="IDX HRM"
               sequence="80"/>
 
-    <!-- 系統設定子選單 -->
+    <!-- ============================================================
+         一、員工管理
+    ============================================================ -->
+    <menuitem id="menu_idx_hrm_employee"
+              name="員工管理"
+              parent="menu_idx_hrm_root"
+              sequence="10"/>
+
+    <menuitem id="menu_hr_employee_list"
+              name="員工清單"
+              parent="menu_idx_hrm_employee"
+              action="hr.open_view_employee_list_my"
+              sequence="10"/>
+
+    <menuitem id="menu_hr_contract_list"
+              name="合約管理"
+              parent="menu_idx_hrm_employee"
+              action="hr_contract.action_hr_contract"
+              sequence="20"/>
+
+    <menuitem id="menu_hr_dependents"
+              name="健保眷屬"
+              parent="menu_idx_hrm_employee"
+              action="action_hr_dependents"
+              sequence="30"/>
+
+    <!-- ============================================================
+         二、出勤管理
+    ============================================================ -->
+    <menuitem id="menu_idx_hrm_attendance"
+              name="出勤管理"
+              parent="menu_idx_hrm_root"
+              sequence="20"/>
+
+    <menuitem id="menu_hr_attendance_online"
+              name="補登出勤申請"
+              parent="menu_idx_hrm_attendance"
+              action="action_hr_attendance_online"
+              sequence="10"/>
+
+    <menuitem id="menu_hr_attendance_abnormal"
+              name="出勤異常記錄"
+              parent="menu_idx_hrm_attendance"
+              action="action_hr_attendance_abnormal"
+              sequence="20"
+              groups="hr.group_hr_manager"/>
+
+    <menuitem id="menu_hr_attendance_month"
+              name="月度出勤結算"
+              parent="menu_idx_hrm_attendance"
+              action="action_hr_attendance_month"
+              sequence="30"
+              groups="hr.group_hr_manager"/>
+
+    <!-- ============================================================
+         三、假勤管理
+    ============================================================ -->
+    <menuitem id="menu_idx_hrm_leave"
+              name="假勤管理"
+              parent="menu_idx_hrm_root"
+              sequence="30"/>
+
+    <menuitem id="menu_hr_leave_request"
+              name="請假申請"
+              parent="menu_idx_hrm_leave"
+              action="hr_holidays.action_hr_leave"
+              sequence="10"/>
+
+    <menuitem id="menu_hr_leave_allocation"
+              name="假別配額"
+              parent="menu_idx_hrm_leave"
+              action="hr_holidays.action_hr_leave_allocation_form"
+              sequence="20"/>
+
+    <!-- ============================================================
+         四、加班管理
+    ============================================================ -->
+    <menuitem id="menu_idx_hrm_overtime"
+              name="加班管理"
+              parent="menu_idx_hrm_root"
+              sequence="40"/>
+
+    <menuitem id="menu_hr_overtime_request"
+              name="加班申請"
+              parent="menu_idx_hrm_overtime"
+              action="action_hr_overtime_request"
+              sequence="10"/>
+
+    <menuitem id="menu_hr_overtime_statistics"
+              name="加班統計"
+              parent="menu_idx_hrm_overtime"
+              action="action_hr_overtime_statistics"
+              sequence="20"
+              groups="hr.group_hr_manager"/>
+
+    <!-- ============================================================
+         五、薪資管理
+    ============================================================ -->
+    <menuitem id="menu_idx_hrm_payroll"
+              name="薪資管理"
+              parent="menu_idx_hrm_root"
+              sequence="50"
+              groups="idx_hrm_19.group_hr_idx_payroll"/>
+
+    <menuitem id="menu_hr_payslip"
+              name="薪資單"
+              parent="menu_idx_hrm_payroll"
+              action="payroll.action_view_hr_payslip_form"
+              sequence="10"
+              groups="idx_hrm_19.group_hr_idx_payroll"/>
+
+    <menuitem id="menu_hr_payslip_run"
+              name="薪資批次"
+              parent="menu_idx_hrm_payroll"
+              action="payroll.action_view_hr_payslip_run_tree"
+              sequence="20"
+              groups="idx_hrm_19.group_hr_idx_payroll"/>
+
+    <menuitem id="menu_hr_income_tax"
+              name="年度扣繳憑單"
+              parent="menu_idx_hrm_payroll"
+              action="action_hr_income_tax"
+              sequence="30"
+              groups="idx_hrm_19.group_hr_idx_payroll"/>
+
+    <menuitem id="menu_hr_payroll_transfers"
+              name="銀行薪資轉帳"
+              parent="menu_idx_hrm_payroll"
+              action="action_hr_payroll_transfers"
+              sequence="40"
+              groups="idx_hrm_19.group_hr_idx_payroll"/>
+
+    <!-- ============================================================
+         六、系統設定
+    ============================================================ -->
     <menuitem id="menu_idx_hrm_config"
               name="系統設定"
               parent="menu_idx_hrm_root"
-              sequence="100"/>
+              sequence="100"
+              groups="hr.group_hr_manager"/>
 
     <menuitem id="menu_hr_attendance_setting"
               name="出勤設定"
