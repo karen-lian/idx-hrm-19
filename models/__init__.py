@@ -8,3 +8,6 @@ from . import hr_annual_leave
 from . import hr_holiday_type_setting
 from . import cron_methods
 from . import hr_overtime_calculation
+from . import hr_employee
+from . import hr_employee_foreign
+from . import hr_contract

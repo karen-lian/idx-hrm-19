@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- PR-014/015/016/016b：合約表單擴充 -->
+    <record id="view_hr_contract_form_idx" model="ir.ui.view">
+        <field name="name">hr.contract.form.idx</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="arch" type="xml">
+            <!-- 在合約資訊區加入審核狀態 -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="approval_state" readonly="1"/>
+            </xpath>
+
+            <!-- 加入台灣擴充欄位 tab -->
+            <xpath expr="//notebook" position="inside">
+                <page string="台灣法規">
+                    <group col="2">
+                        <group string="合約資訊">
+                            <field name="change_reason"/>
+                            <field name="job_level"/>
+                            <field name="job_class"/>
+                            <field name="is_part_time"/>
+                            <field name="no_seniority"/>
+                            <field name="is_no_pr"/>
+                            <field name="no_resident" readonly="1"/>
+                        </group>
+                        <group string="薪資計算">
+                            <field name="hour_salary" readonly="1"/>
+                            <field name="hour_leave_salary" readonly="1"/>
+                        </group>
+                    </group>
+                    <separator string="勞健保費率"/>
+                    <group col="2">
+                        <group string="員工負擔">
+                            <field name="labor_insurance_premium_employee"/>
+                            <field name="health_insurance_premium_employee"/>
+                        </group>
+                        <group string="雇主負擔">
+                            <field name="labor_insurance_premium_employer"/>
+                            <field name="health_insurance_premium_employer"/>
+                            <field name="pension_employer"/>
+                        </group>
+                    </group>
+                    <separator string="審核資訊"
+                               attrs="{'invisible': [('approval_state', '=', 'draft')]}"/>
+                    <group col="2" attrs="{'invisible': [('approval_state', '=', 'draft')]}">
+                        <field name="approver_id" readonly="1"/>
+                        <field name="approval_date" readonly="1"/>
+                        <field name="rejection_reason" readonly="1"
+                               attrs="{'invisible': [('approval_state', '!=', 'rejected')]}"/>
+                    </group>
+                </page>
+            </xpath>
+
+            <!-- 審核按鈕 -->
+            <xpath expr="//header" position="inside">
+                <button name="action_submit_for_approval"
+                        string="提交審核"
+                        type="object"
+                        class="btn-primary"
+                        attrs="{'invisible': [('approval_state', '!=', 'draft')]}"/>
+                <button name="action_approve"
+                        string="核准"
+                        type="object"
+                        class="btn-success"
+                        groups="hr.group_hr_manager"
+                        attrs="{'invisible': [('approval_state', '!=', 'pending')]}"/>
+                <button name="action_reject"
+                        string="駁回"
+                        type="object"
+                        class="btn-danger"
+                        groups="hr.group_hr_manager"
+                        attrs="{'invisible': [('approval_state', '!=', 'pending')]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

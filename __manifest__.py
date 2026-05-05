@@ -23,6 +23,8 @@
         "views/hr_income_tax_pivot_views.xml",
         "views/hr_annual_leave_views.xml",
         "views/hr_holiday_type_setting_views.xml",
+        "views/hr_employee_views.xml",
+        "views/hr_contract_views.xml",
         "views/menus.xml",
     ],
     "application": False,
