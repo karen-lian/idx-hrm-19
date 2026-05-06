@@ -13,7 +13,7 @@ class HrEmployee(models.Model):
         tracking=True,
     )
     no_resident = fields.Boolean(
-        string="非居住者",
+        string="非臺灣居住者",
         default=False,
         help="勾選表示非中華民國居住者，適用非居住者扣繳稅率",
     )

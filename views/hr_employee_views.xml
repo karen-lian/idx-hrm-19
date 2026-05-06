@@ -12,13 +12,13 @@
             </xpath>
 
             <!-- 在 Private Information tab 加入台灣欄位 -->
-            <xpath expr="//page[@name='private_information']" position="inside">
+            <xpath expr="//page[@name='personal_information']" position="inside">
                 <separator string="台灣法規資訊"/>
                 <group col="2">
                     <group>
                         <field name="no_resident"/>
                         <field name="is_no_punch"/>
-                        <field name="is_distribute"/>
+                        <field name="is_distribute" invisible="1"/>
                         <field name="conversion_date"/>
                     </group>
                     <group>
@@ -28,8 +28,8 @@
                     </group>
                 </group>
 
-                <separator string="外籍員工資訊" attrs="{'invisible': [('is_no_pr', '=', False)]}"/>
-                <group col="2" attrs="{'invisible': [('is_no_pr', '=', False)]}">
+                <separator string="外籍員工資訊" invisible="not is_no_pr"/>
+                <group col="2" invisible="not is_no_pr">
                     <group>
                         <field name="is_no_pr"/>
                         <field name="permit_no"/>

@@ -31,7 +31,7 @@
                         <field name="annual_quota_days"/>
                         <field name="allow_carry_over"/>
                         <field name="carry_over_limit_days"
-                               attrs="{'invisible': [('allow_carry_over','=',False)]}"/>
+                               invisible="not allow_carry_over"/>
                     </group>
                     <group string="說明">
                         <field name="note" nolabel="1"/>

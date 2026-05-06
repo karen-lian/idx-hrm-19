@@ -5,7 +5,7 @@
     <record id="action_hr_dependents" model="ir.actions.act_window">
         <field name="name">健保眷屬</field>
         <field name="res_model">hr.dependents.information</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
     <record id="view_hr_dependents_form" model="ir.ui.view">
         <field name="name">hr.dependents.information.form</field>
@@ -30,20 +30,16 @@
                         </group>
                     </group>
                 </sheet>
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
+                <chatter/>
             </form>
         </field>
     </record>
 
-    <record id="view_hr_dependents_tree" model="ir.ui.view">
-        <field name="name">hr.dependents.information.tree</field>
+    <record id="view_hr_dependents_list" model="ir.ui.view">
+        <field name="name">hr.dependents.information.list</field>
         <field name="model">hr.dependents.information</field>
         <field name="arch" type="xml">
-            <tree string="健保眷屬">
+            <list string="健保眷屬">
                 <field name="employee_id"/>
                 <field name="name"/>
                 <field name="relationship"/>
@@ -52,7 +48,7 @@
                 <field name="withdraw_date"/>
                 <field name="is_active_insured"/>
                 <field name="health_insurance_premium"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -62,11 +58,11 @@
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="idx_hrm_19.view_hr_employee_form_idx"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='private_information']" position="inside">
+            <xpath expr="//page[@name='personal_information']" position="inside">
                 <separator string="健保眷屬"/>
                 <field name="active_dependent_count" readonly="1"/>
                 <field name="dependents_information_ids">
-                    <tree editable="bottom">
+                    <list editable="bottom">
                         <field name="sequence" widget="handle"/>
                         <field name="name"/>
                         <field name="relationship"/>
@@ -75,7 +71,7 @@
                         <field name="withdraw_date"/>
                         <field name="is_active_insured" readonly="1"/>
                         <field name="health_insurance_premium" readonly="1"/>
-                    </tree>
+                    </list>
                 </field>
             </xpath>
         </field>

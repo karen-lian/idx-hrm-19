@@ -13,7 +13,6 @@
         "mail",
     ],
     "data": [
-        "security/ir_security_groups.xml",
         "security/ir.model.access.csv",
         "security/ir_record_rules.xml",
         "data/ir_cron.xml",

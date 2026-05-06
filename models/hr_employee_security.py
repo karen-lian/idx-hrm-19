@@ -14,7 +14,7 @@ class HrEmployee(models.Model):
 
     def _compute_id_masked(self):
         is_payroll = self.env.user.has_group(
-            "idx_hrm_19.group_hr_idx_payroll"
+            "payroll.group_payroll_manager"
         )
         for emp in self:
             id_no = emp.identification_id

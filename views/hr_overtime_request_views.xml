@@ -9,13 +9,13 @@
                 <header>
                     <button name="action_submit" string="提交審核" type="object"
                             class="btn-primary"
-                            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                            invisible="state != 'draft'"/>
                     <button name="action_approve" string="核准" type="object"
                             class="btn-success" groups="hr.group_hr_manager"
-                            attrs="{'invisible': [('state', '!=', 'pending')]}"/>
+                            invisible="state != 'pending'"/>
                     <button name="action_reject" string="駁回" type="object"
                             class="btn-danger" groups="hr.group_hr_manager"
-                            attrs="{'invisible': [('state', '!=', 'pending')]}"/>
+                            invisible="state != 'pending'"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,pending,approved"/>
                 </header>
@@ -35,18 +35,14 @@
                         </group>
                     </group>
                     <group string="費用（核准後計算）"
-                           attrs="{'invisible': [('state', '!=', 'approved')]}">
+                           invisible="state != 'approved'">
                         <field name="tax_free_amount" readonly="1"/>
                         <field name="taxable_amount" readonly="1"/>
                         <field name="total_amount" readonly="1"/>
                     </group>
                     <field name="remark" placeholder="加班原因..."/>
                 </sheet>
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
+                <chatter/>
             </form>
         </field>
     </record>
@@ -55,7 +51,7 @@
         <field name="name">hr.overtime.request.tree</field>
         <field name="model">hr.overtime.request</field>
         <field name="arch" type="xml">
-            <tree string="加班申請" decoration-info="state=='pending'" decoration-success="state=='approved'">
+            <list string="加班申請" decoration-info="state=='pending'" decoration-success="state=='approved'">
                 <field name="name"/>
                 <field name="employee_id"/>
                 <field name="overtime_date"/>
@@ -64,14 +60,14 @@
                 <field name="compensation"/>
                 <field name="total_amount"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 
     <record id="action_hr_overtime_request" model="ir.actions.act_window">
         <field name="name">加班申請</field>
         <field name="res_model">hr.overtime.request</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="context">{'search_default_my_overtime': 1}</field>
     </record>
 
@@ -79,41 +75,41 @@
     <record id="action_hr_attendance_month" model="ir.actions.act_window">
         <field name="name">月度出勤結算</field>
         <field name="res_model">hr.attendance.month</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
     <!-- PR-064：補登申請 Actions -->
     <record id="action_hr_attendance_online" model="ir.actions.act_window">
         <field name="name">補登出勤申請</field>
         <field name="res_model">hr.attendance.online</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
     <!-- PR-064：出勤異常記錄 Actions -->
     <record id="action_hr_attendance_abnormal" model="ir.actions.act_window">
         <field name="name">出勤異常記錄</field>
         <field name="res_model">hr.attendance.abnormal.absence.record</field>
-        <field name="view_mode">tree</field>
+        <field name="view_mode">list</field>
     </record>
 
     <!-- PR-066：加班統計報表 Actions -->
     <record id="action_hr_overtime_statistics" model="ir.actions.act_window">
         <field name="name">加班統計</field>
         <field name="res_model">hr.overtime.statistics.record</field>
-        <field name="view_mode">tree</field>
+        <field name="view_mode">list</field>
     </record>
 
     <!-- PR-067：年度扣繳憑單 Actions -->
     <record id="action_hr_income_tax" model="ir.actions.act_window">
         <field name="name">年度扣繳憑單</field>
         <field name="res_model">hr.income.tax</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
     <!-- PR-068：銀行薪轉 Actions -->
     <record id="action_hr_payroll_transfers" model="ir.actions.act_window">
         <field name="name">銀行薪資轉帳</field>
         <field name="res_model">hr.payroll.transfers</field>
-        <field name="view_mode">tree</field>
+        <field name="view_mode">list</field>
     </record>
 </odoo>

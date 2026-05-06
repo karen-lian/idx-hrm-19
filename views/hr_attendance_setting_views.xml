@@ -27,7 +27,7 @@
                     <group string="全勤獎金">
                         <field name="enable_perfect_attendance"/>
                         <field name="perfect_attendance_amount"
-                               attrs="{'invisible': [('enable_perfect_attendance','=',False)]}"/>
+                               invisible="not enable_perfect_attendance"/>
                         <field name="perfect_attendance_leave_limit"/>
                         <field name="grace_minutes"/>
                         <field name="perfect_attendance_late_limit"/>

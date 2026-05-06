@@ -9,13 +9,13 @@
                 <header>
                     <button name="action_submit" string="提交審核" type="object"
                             class="btn-primary"
-                            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                            invisible="state != 'draft'"/>
                     <button name="action_approve" string="核准" type="object"
                             class="btn-success" groups="hr.group_hr_manager"
-                            attrs="{'invisible': [('state', '!=', 'pending')]}"/>
+                            invisible="state != 'pending'"/>
                     <button name="action_reject" string="駁回" type="object"
                             class="btn-danger" groups="hr.group_hr_manager"
-                            attrs="{'invisible': [('state', '!=', 'pending')]}"/>
+                            invisible="state != 'pending'"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,pending,approved"/>
                 </header>
@@ -36,39 +36,35 @@
                     <group>
                         <field name="reason"/>
                         <field name="rejection_reason" readonly="1"
-                               attrs="{'invisible': [('state', '!=', 'rejected')]}"/>
+                               invisible="state != 'rejected'"/>
                     </group>
                 </sheet>
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
+                <chatter/>
             </form>
         </field>
     </record>
 
-    <record id="view_hr_attendance_online_tree" model="ir.ui.view">
-        <field name="name">hr.attendance.online.tree</field>
+    <record id="view_hr_attendance_online_list" model="ir.ui.view">
+        <field name="name">hr.attendance.online.list</field>
         <field name="model">hr.attendance.online</field>
         <field name="arch" type="xml">
-            <tree string="補登出勤申請">
+            <list string="補登出勤申請">
                 <field name="name"/>
                 <field name="employee_id"/>
                 <field name="apply_date"/>
                 <field name="check_in"/>
                 <field name="check_out"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 
     <!-- PR-022：出勤異常紀錄 -->
-    <record id="view_hr_attendance_abnormal_tree" model="ir.ui.view">
-        <field name="name">hr.attendance.abnormal.absence.record.tree</field>
+    <record id="view_hr_attendance_abnormal_list" model="ir.ui.view">
+        <field name="name">hr.attendance.abnormal.absence.record.list</field>
         <field name="model">hr.attendance.abnormal.absence.record</field>
         <field name="arch" type="xml">
-            <tree string="出勤異常紀錄" decoration-danger="not is_resolved">
+            <list string="出勤異常紀錄" decoration-danger="not is_resolved">
                 <field name="employee_id"/>
                 <field name="abnormal_date"/>
                 <field name="type"/>
@@ -76,16 +72,16 @@
                 <field name="deduction_amount"/>
                 <field name="audit_state"/>
                 <field name="is_resolved"/>
-            </tree>
+            </list>
         </field>
     </record>
 
     <!-- PR-024：月度出勤結算 -->
-    <record id="view_hr_attendance_month_tree" model="ir.ui.view">
-        <field name="name">hr.attendance.month.tree</field>
+    <record id="view_hr_attendance_month_list" model="ir.ui.view">
+        <field name="name">hr.attendance.month.list</field>
         <field name="model">hr.attendance.month</field>
         <field name="arch" type="xml">
-            <tree string="月度出勤結算">
+            <list string="月度出勤結算">
                 <field name="employee_id"/>
                 <field name="period"/>
                 <field name="late_count"/>
@@ -95,7 +91,7 @@
                 <field name="perfect_attendance"/>
                 <field name="perfect_attendance_bonus"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 
