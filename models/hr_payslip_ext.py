@@ -20,13 +20,18 @@ class HrPayslip(models.Model):
         string="非固定薪資項目",
     )
 
-    # PR-046：銀行薪轉
+    # PR-046：銀行薪轉（Odoo 19 hr.employee 改為 bank_account_ids 多筆，取第一筆作為薪轉帳號）
     bank_account_id = fields.Many2one(
         "res.partner.bank",
         string="薪轉帳號",
-        related="employee_id.bank_account_id",
-        readonly=True,
+        compute="_compute_bank_account_id",
+        store=True,
     )
+
+    @api.depends("employee_id.bank_account_ids")
+    def _compute_bank_account_id(self):
+        for slip in self:
+            slip.bank_account_id = slip.employee_id.bank_account_ids[:1]
 
 
 class HrPayslipUnfrequented(models.Model):
@@ -102,10 +107,10 @@ class HrPayrollTransfers(models.Model):
         string="薪資單",
     )
 
-    @api.depends("employee_id.bank_account_id")
+    @api.depends("employee_id.bank_account_ids")
     def _compute_bank_info(self):
         for rec in self:
-            bank = rec.employee_id.bank_account_id
+            bank = rec.employee_id.bank_account_ids[:1]
             if bank:
                 rec.bank_code = bank.bank_id.bic or ""
                 rec.account_number = bank.acc_number or ""
