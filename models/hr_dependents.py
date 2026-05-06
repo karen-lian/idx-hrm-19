@@ -102,11 +102,11 @@ class HrDependentsInformation(models.Model):
 
     @api.depends(
         "is_active_insured",
-        "employee_id.contract_ids.health_insurance_premium_employee",
-        "employee_id.contract_ids.state",
+        "employee_id.version_ids.health_insurance_premium_employee",
+        "employee_id.current_version_id",
     )
     def _compute_health_insurance_premium(self):
-        """PR-018：眷屬健保費 = 員工本人健保費（在職合約）× 眷屬費率倍數。
+        """PR-018：眷屬健保費 = 員工本人健保費（當前版本）× 眷屬費率倍數。
 
         依全民健保法：每位眷屬費率與員工本人相同（×1），
         由員工自行負擔，上限 3 口（第 4 口以上由健保署補貼）。
@@ -115,21 +115,18 @@ class HrDependentsInformation(models.Model):
             if not dep.is_active_insured:
                 dep.health_insurance_premium = 0.0
                 continue
-            active_contract = dep.employee_id.contract_ids.filtered(
-                lambda c: c.state == "open"
-            )
-            if not active_contract:
+            current_version = dep.employee_id.current_version_id
+            if not current_version:
                 dep.health_insurance_premium = 0.0
                 continue
-            contract = active_contract[0]
             dep.health_insurance_premium = round(
-                contract.health_insurance_premium_employee, 2
+                current_version.health_insurance_premium_employee, 2
             )
 
 
-class HrContract(models.Model):
-    """PR-018：合約加入眷屬保費彙總計算"""
-    _inherit = "hr.contract"
+class HrVersion(models.Model):
+    """PR-018：hr.version 加入眷屬保費彙總計算"""
+    _inherit = "hr.version"
 
     dependent_ids = fields.One2many(
         "hr.dependents.information",
@@ -152,9 +149,9 @@ class HrContract(models.Model):
 
     @api.depends("employee_id.dependents_information_ids.is_active_insured")
     def _compute_dependent_count(self):
-        for contract in self:
-            contract.dependent_count = len(
-                contract.employee_id.dependents_information_ids.filtered(
+        for version in self:
+            version.dependent_count = len(
+                version.employee_id.dependents_information_ids.filtered(
                     "is_active_insured"
                 )
             )
@@ -165,11 +162,11 @@ class HrContract(models.Model):
         "employee_id.dependents_information_ids.health_insurance_premium",
     )
     def _compute_dependent_premium(self):
-        for contract in self:
-            active_deps = contract.employee_id.dependents_information_ids.filtered(
+        for version in self:
+            active_deps = version.employee_id.dependents_information_ids.filtered(
                 "is_active_insured"
             )
-            contract.dependent_health_insurance_total = sum(
+            version.dependent_health_insurance_total = sum(
                 dep.health_insurance_premium for dep in active_deps
             )
 

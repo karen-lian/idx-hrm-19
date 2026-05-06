@@ -144,11 +144,11 @@ class HrLeaveAllocation(models.Model):
 
         # 年中到職：按剩餘月份比例
         contract_start = None
-        contracts = employee.contract_ids.filtered(
-            lambda c: c.state in ("open", "close") and c.date_start
+        versions = employee.version_ids.filtered(
+            lambda v: v.contract_date_start
         )
-        if contracts:
-            contract_start = min(contracts.mapped("date_start"))
+        if versions:
+            contract_start = min(versions.mapped("contract_date_start"))
 
         if contract_start and contract_start.year == year:
             month_ratio = (12 - contract_start.month + 1) / 12
@@ -212,7 +212,7 @@ class HrLeaveAllocation(models.Model):
     def batch_allocate_all_employees(self, mode="anniversary"):
         """PR-033：一鍵全體員工特休分配。"""
         employees = self.env["hr.employee"].search([
-            ("contract_ids.state", "=", "open"),
+            ("current_version_id", "!=", False),
         ])
         year = fields.Date.today().year
         for emp in employees:

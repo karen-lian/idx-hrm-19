@@ -4,21 +4,25 @@ from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
 
-class HrContract(models.Model):
-    """PR-056/058：到職觸發假別分配、留停/復職流程"""
-    _inherit = "hr.contract"
+class HrVersion(models.Model):
+    """PR-056/058：到職觸發假別分配、留停/復職流程（基於 hr.version）"""
+    _inherit = "hr.version"
 
     def write(self, vals):
         result = super().write(vals)
-        if "state" in vals and vals["state"] == "open":
-            for contract in self:
-                contract._on_contract_open()
+        # PR-056：當 approval_state 首次變為 approved 且版本是當前版本時，觸發到職流程
+        if "approval_state" in vals and vals["approval_state"] == "approved":
+            for version in self:
+                if version.is_current:
+                    version._on_version_approved()
         return result
 
-    def _on_contract_open(self):
-        """PR-056：合約生效 → 自動建立法定假別配額。"""
+    def _on_version_approved(self):
+        """PR-056：版本核准且為當前版本 → 自動建立法定假別配額。"""
         self.ensure_one()
         emp = self.employee_id
+        if not emp:
+            return
         STATUTORY_LEAVE_DAYS = {
             "PERSONAL": 14,
             "SICK": 30,
@@ -47,32 +51,36 @@ class HrContract(models.Model):
         self.env["hr.leave.allocation"]._auto_allocate_annual(emp)
 
     def action_furlough(self):
-        """PR-058：建立留停子合約、凍結特休結轉日期。"""
+        """PR-058：建立留停新版本（將合約結束日設為今日、下一版本為留停）。"""
         self.ensure_one()
-        if self.state != "open":
-            raise ValidationError("只有生效中的合約才能轉為留停！")
-        furlough = self.copy({
+        if not self.is_current:
+            raise ValidationError("只有當前生效版本才能轉為留停！")
+        today = fields.Date.today()
+        # 建立留停版本（date_version = 今日，change_reason = furlough，no_seniority = True）
+        furlough_version = self.copy({
             "name": f"{self.name}（留停）",
+            "date_version": today,
             "change_reason": "furlough",
             "no_seniority": True,
-            "state": "open",
             "approval_state": "approved",
             "labor_insurance_premium_employee": 0.0,
             "health_insurance_premium_employee": 0.0,
             "pension_employer": 0.0,
+            "contract_date_start": today,
+            "contract_date_end": False,
         })
-        self.write({"state": "close", "change_reason": "furlough"})
-        return furlough
+        return furlough_version
 
     def action_reinstate(self, reinstate_date=None):
-        """PR-058：復職 → 結束留停合約、計算留停天數延順特休結轉日。"""
+        """PR-058：復職 → 結束留停版本、計算留停天數延順特休結轉日。"""
         self.ensure_one()
         if self.change_reason != "furlough":
-            raise ValidationError("此合約不是留停合約！")
+            raise ValidationError("此版本不是留停版本！")
         today = reinstate_date or fields.Date.today()
-        furlough_days = (today - self.date_start).days if self.date_start else 0
+        furlough_days = (today - self.contract_date_start).days if self.contract_date_start else 0
 
-        self.write({"date_end": today, "state": "close"})
+        # 設定留停結束日
+        self.write({"contract_date_end": today})
 
         # 延順特休結轉日期
         annual_allocs = self.env["hr.leave.allocation"].search([
@@ -81,6 +89,17 @@ class HrContract(models.Model):
             ("state", "=", "validate"),
         ])
         annual_allocs.freeze_for_furlough(furlough_days)
+
+        # 建立復職新版本
+        self.copy({
+            "name": f"{self.employee_id.name} 復職合約",
+            "date_version": today,
+            "change_reason": "reinstate",
+            "no_seniority": False,
+            "approval_state": "approved",
+            "contract_date_start": today,
+            "contract_date_end": False,
+        })
 
 
 class HrResignationWizard(models.TransientModel):
@@ -162,8 +181,8 @@ class HrResignationWizard(models.TransientModel):
                 wizard.settlement_total = 0.0
                 continue
 
-            active_contract = emp.contract_ids.filtered(lambda c: c.state == "open")
-            if not active_contract:
+            current_version = emp.current_version_id
+            if not current_version:
                 wizard.unused_annual_days = 0.0
                 wizard.unused_leave_amount = 0.0
                 wizard.comp_leave_hours = 0.0
@@ -173,9 +192,8 @@ class HrResignationWizard(models.TransientModel):
                 wizard.settlement_total = 0.0
                 continue
 
-            contract = active_contract[0]
-            daily_wage = round(contract.wage / 30, 2)
-            hour_wage = contract.hour_salary
+            daily_wage = round(current_version.wage / 30, 2)
+            hour_wage = current_version.hour_salary
 
             # 未休特休
             annual_lt = self.env["hr.leave.type"].search([("code", "=", "ANNUAL")], limit=1)
@@ -200,12 +218,12 @@ class HrResignationWizard(models.TransientModel):
 
             # 比例年終：任職月數 / 12
             months_worked = max(int(emp.job_tenure * 12), 1)
-            annual_bonus_base = contract.wage
+            annual_bonus_base = current_version.wage
             wizard.pro_rata_bonus = round(annual_bonus_base * min(months_worked, 12) / 12, 2)
 
             # 遣散費：依勞基法年資分級（每年 0.5 個月薪）
             tenure_years = emp.job_tenure
-            wizard.severance_pay = round(contract.wage * tenure_years * 0.5, 2)
+            wizard.severance_pay = round(current_version.wage * tenure_years * 0.5, 2)
 
             total = (
                 wizard.unused_leave_amount
@@ -216,14 +234,14 @@ class HrResignationWizard(models.TransientModel):
             wizard.settlement_total = round(total, 2)
 
     def action_confirm_resignation(self):
-        """PR-057a：確認離職 → 關閉合約、封存員工。"""
+        """PR-057a：確認離職 → 設定離職日期、封存員工。"""
         self.ensure_one()
         emp = self.employee_id
-        active_contracts = emp.contract_ids.filtered(lambda c: c.state == "open")
-        for contract in active_contracts:
-            contract.write({
-                "date_end": self.resignation_date,
-                "state": "close",
+        # 在當前版本設定離職日期與原因
+        current_version = emp.current_version_id
+        if current_version:
+            current_version.write({
+                "contract_date_end": self.resignation_date,
                 "change_reason": "resign",
             })
         emp.write({"active": False})
@@ -237,21 +255,21 @@ class HrResignationWizard(models.TransientModel):
         """PR-057c：產生最終薪資單（含清算明細）。"""
         self.ensure_one()
         emp = self.employee_id
-        # 找最近一個完成的合約
-        closed_contract = emp.contract_ids.filtered(
-            lambda c: c.state == "close" and c.change_reason == "resign"
-        ).sorted("date_end", reverse=True)
-        if not closed_contract:
+        # 找最近一個 change_reason == 'resign' 的版本（含 contract_date_end）
+        resigned_version = emp.version_ids.filtered(
+            lambda v: v.change_reason == "resign" and v.contract_date_end
+        ).sorted("contract_date_end", reverse=True)
+        if not resigned_version:
             return
 
-        contract = closed_contract[0]
+        version = resigned_version[0]
         date_from = self.resignation_date.replace(day=1)
         date_to = self.resignation_date
 
         payslip = self.env["hr.payslip"].create({
             "name": f"最終薪資單 - {emp.name}（{date_to}）",
             "employee_id": emp.id,
-            "contract_id": contract.id,
+            "version_id": version.id,
             "date_from": date_from,
             "date_to": date_to,
             "state": "draft",

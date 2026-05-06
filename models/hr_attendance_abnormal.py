@@ -291,11 +291,9 @@ class HrAttendanceMonth(models.Model):
                 )
                 deduction += criteria.deduction if criteria else 0.0
             # 曠職扣款：日薪 × 曠職天數
-            active_contract = rec.employee_id.contract_ids.filtered(
-                lambda c: c.state == "open"
-            )
-            if active_contract and rec.absent_days:
-                daily = active_contract[0].wage / 30
+            current_version = rec.employee_id.current_version_id
+            if current_version and rec.absent_days:
+                daily = current_version.wage / 30
                 deduction += daily * rec.absent_days
             rec.deduction_total = round(deduction, 2)
 

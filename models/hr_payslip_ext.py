@@ -143,14 +143,14 @@ class HrPayslip(models.Model):
     )
 
     @api.depends(
-        "contract_id.wage",
+        "version_id.wage",
         "employee_id.dependents_information_ids.is_active_insured",
         "date_from", "date_to",
     )
     def _compute_tw_income(self):
         """PR-039：計算底薪、全勤獎金、加班費。"""
         for slip in self:
-            contract = slip.contract_id
+            contract = slip.version_id
             slip.base_wage = contract.wage if contract else 0.0
 
             # 全勤獎金：查詢對應月份 hr.attendance.month
@@ -195,9 +195,9 @@ class HrPayslip(models.Model):
             )
 
     @api.depends(
-        "contract_id.labor_insurance_premium_employee",
-        "contract_id.health_insurance_premium_employee",
-        "contract_id.dependent_health_insurance_total",
+        "version_id.labor_insurance_premium_employee",
+        "version_id.health_insurance_premium_employee",
+        "version_id.dependent_health_insurance_total",
         "gross_income",
         "employee_id.no_resident",
         "date_from",
@@ -205,7 +205,7 @@ class HrPayslip(models.Model):
     def _compute_tw_deductions(self):
         """PR-040/043/044：計算勞健保、所得稅、遲到扣款。"""
         for slip in self:
-            contract = slip.contract_id
+            contract = slip.version_id
             if not contract:
                 slip.labor_insurance_deduct = 0.0
                 slip.health_insurance_deduct = 0.0
@@ -238,7 +238,7 @@ class HrPayslip(models.Model):
     def _compute_income_tax(self):
         """PR-044：所得稅計算（居住者稅額表查詢 / 非居住者固定稅率）。"""
         self.ensure_one()
-        contract = self.contract_id
+        contract = self.version_id
         if not contract:
             return 0.0
 

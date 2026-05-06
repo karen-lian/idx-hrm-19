@@ -69,21 +69,23 @@ class HrEmployee(models.Model):
     ]
 
     @api.depends(
-        "contract_ids.date_start",
-        "contract_ids.state",
-        "contract_ids.no_seniority",
+        "version_ids.contract_date_start",
+        "version_ids.is_current",
+        "version_ids.is_past",
+        "version_ids.no_seniority",
     )
     def _compute_job_tenure(self):
         today = fields.Date.today()
         for emp in self:
-            contracts = emp.contract_ids.filtered(
-                lambda c: c.state in ("open", "close") and c.date_start
+            # 取所有有合約起始日的版本（含現行與歷史）
+            versions = emp.version_ids.filtered(
+                lambda v: v.contract_date_start
             )
-            if not contracts:
+            if not versions:
                 emp.job_tenure = 0.0
                 continue
 
-            earliest = min(contracts.mapped("date_start"))
+            earliest = min(versions.mapped("contract_date_start"))
             total_days = (today - earliest).days
 
             # 扣除 no_seniority 假單天數
@@ -98,15 +100,15 @@ class HrEmployee(models.Model):
                 leave.number_of_days for leave in no_sen_leaves
             )
 
-            # 扣除留停期間（state = 'close' 且 reason 為留停的合約）
-            furlough_contracts = emp.contract_ids.filtered(
-                lambda c: c.state == "close"
-                and c.change_reason == "furlough"
-                and c.date_start
-                and c.date_end
+            # 扣除留停期間（change_reason == 'furlough' 且已結束的版本）
+            furlough_versions = emp.version_ids.filtered(
+                lambda v: v.change_reason == "furlough"
+                and v.is_past
+                and v.contract_date_start
+                and v.contract_date_end
             )
-            for fc in furlough_contracts:
-                deduct_days += (fc.date_end - fc.date_start).days
+            for fv in furlough_versions:
+                deduct_days += (fv.contract_date_end - fv.contract_date_start).days
 
             net_days = max(total_days - deduct_days, 0)
             emp.job_tenure = round(net_days / 365.0, 3)

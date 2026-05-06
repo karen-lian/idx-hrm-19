@@ -113,8 +113,8 @@ class HrOvertimeRequest(models.Model):
 
     @api.depends(
         "hours", "overtime_type_id", "state",
-        "employee_id.contract_ids.hour_salary",
-        "employee_id.contract_ids.state",
+        "employee_id.version_ids.hour_salary",
+        "employee_id.current_version_id",
     )
     def _compute_overtime_pay(self):
         """PR-035：呼叫既有加班費計算引擎。"""
@@ -126,10 +126,8 @@ class HrOvertimeRequest(models.Model):
                 req.total_amount = 0.0
                 continue
 
-            active_contract = req.employee_id.contract_ids.filtered(
-                lambda c: c.state == "open"
-            )
-            hour_salary = active_contract[0].hour_salary if active_contract else 0.0
+            current_version = req.employee_id.current_version_id
+            hour_salary = current_version.hour_salary if current_version else 0.0
 
             result = OTCalc._calculate(
                 ot_type=req.overtime_type_id.code if req.overtime_type_id else "weekday",

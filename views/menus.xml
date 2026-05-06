@@ -23,10 +23,11 @@
               sequence="10"/>
 
     <menuitem id="menu_hr_contract_list"
-              name="合約管理"
+              name="薪資版本管理"
               parent="menu_idx_hrm_employee"
-              action="hr_contract.action_hr_contract"
-              sequence="20"/>
+              action="action_hr_version_tw"
+              sequence="20"
+              groups="hr.group_hr_manager"/>
 
     <menuitem id="menu_hr_dependents"
               name="健保眷屬"

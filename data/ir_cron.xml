@@ -2,13 +2,13 @@
 <odoo>
     <data noupdate="1">
 
-        <!-- 1. 合約狀態自動更新（每日 00:05 UTC）
-             draft→open（生效日到達）、open→close（到期） -->
+        <!-- 1. 版本審核到期通知（每日 00:05 UTC）
+             approval_state=pending 且 date_version <= 今日時，發送通知 -->
         <record id="cron_update_contract_state" model="ir.cron">
-            <field name="name">IDX HRM: 合約狀態自動更新</field>
-            <field name="model_id" ref="hr.model_hr_contract"/>
+            <field name="name">IDX HRM: 版本審核到期通知</field>
+            <field name="model_id" ref="hr.model_hr_version"/>
             <field name="state">code</field>
-            <field name="code">model._cron_update_contract_state()</field>
+            <field name="code">model._cron_update_version_approval()</field>
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
             <field name="nextcall">2026-05-06 00:05:00</field>

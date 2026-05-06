@@ -4,25 +4,22 @@ from odoo import api, fields, models
 from odoo.exceptions import UserError
 
 
-class HrContractCron(models.Model):
-    _inherit = "hr.contract"
+class HrVersionCron(models.Model):
+    """PR-015：hr.version 排程任務（Odoo 19 已無 hr.contract state machine，此 cron 保留供擴充用）"""
+    _inherit = "hr.version"
 
-    def _cron_update_contract_state(self):
-        """每日 00:05 UTC：自動更新合約狀態。
-        draft → open：生效日 <= 今日
-        open → close：到期日 < 今日
-        """
+    def _cron_update_version_approval(self):
+        """每日 00:05 UTC：自動通知審核逾期的版本（approval_state = pending 且 date_version <= 今日）。"""
         today = fields.Date.today()
-
-        drafts = self.search([("state", "=", "draft"), ("date_start", "<=", today)])
-        if drafts:
-            drafts.write({"state": "open"})
-
-        opens = self.search(
-            [("state", "=", "open"), ("date_end", "!=", False), ("date_end", "<", today)]
-        )
-        if opens:
-            opens.write({"state": "close"})
+        pending_versions = self.search([
+            ("approval_state", "=", "pending"),
+            ("date_version", "<=", today),
+        ])
+        for version in pending_versions:
+            version.message_post(
+                body=f"版本生效日（{version.date_version}）已到達，請儘速核准！",
+                subtype_xmlid="mail.mt_note",
+            )
 
 
 class HrAttendanceCron(models.Model):
@@ -83,17 +80,17 @@ class HrLeaveAllocationCron(models.Model):
             return
 
         active_employees = self.env["hr.employee"].search(
-            [("active", "=", True), ("contract_id", "!=", False)]
+            [("active", "=", True), ("current_version_id", "!=", False)]
         )
 
         annual_leave_table = self.env["hr.annual.leave"].search([])
 
         for emp in active_employees:
-            contract = emp.contract_id
-            if not contract or not contract.date_start:
+            version = emp.current_version_id
+            if not version or not version.contract_date_start:
                 continue
 
-            start = contract.date_start
+            start = version.contract_date_start
             # 計算服務滿整月數後的週年日是否是今日
             if start.month != today.month or start.day != today.day:
                 continue
@@ -159,7 +156,7 @@ class HrLeaveAllocationCron(models.Model):
                 continue
 
             emp = alloc.employee_id
-            hourly_rate = emp.contract_id.hour_salary if emp.contract_id else 0.0
+            hourly_rate = emp.current_version_id.hour_salary if emp.current_version_id else 0.0
             # 補休 1 天 = 8 小時
             cash_amount = remaining * 8 * hourly_rate
 
