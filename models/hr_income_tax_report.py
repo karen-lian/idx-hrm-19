@@ -88,7 +88,18 @@ class HrIncomeTax(models.Model):
 
     @api.depends("employee_id", "ad_year")
     def _compute_annual_totals(self):
-        """彙總全年薪資單資料。"""
+        """彙總全年薪資單資料（從 hr.payslip.line 依薪資規則代碼聚合）。
+
+        對應規則代碼：
+        - add_amount       → 應付合計（A，含應稅+免稅+非固定薪資加項）
+        - WITHHOLDincome   → 所得稅扣繳
+        - OVT_weekdays / OVT_day_off / OVT_regular_holiday / OVT_holiday
+                           → 免稅加班費（合計）
+        """
+        TAX_FREE_OT_CODES = (
+            "OVT_weekdays", "OVT_day_off",
+            "OVT_regular_holiday", "OVT_holiday",
+        )
         for rec in self:
             if not rec.ad_year:
                 rec.total_salary = 0.0
@@ -105,9 +116,16 @@ class HrIncomeTax(models.Model):
                 ("date_from", ">=", date_from),
                 ("date_to", "<=", date_to),
             ])
-            rec.total_salary = sum(slips.mapped("gross_income"))
-            rec.total_tax_withheld = sum(slips.mapped("income_tax_deduct"))
-            rec.total_tax_free_ot = sum(slips.mapped("overtime_tax_free"))
+            lines = slips.mapped("line_ids")
+            rec.total_salary = sum(
+                lines.filtered(lambda l: l.code == "add_amount").mapped("total")
+            )
+            rec.total_tax_withheld = sum(
+                lines.filtered(lambda l: l.code == "WITHHOLDincome").mapped("total")
+            )
+            rec.total_tax_free_ot = sum(
+                lines.filtered(lambda l: l.code in TAX_FREE_OT_CODES).mapped("total")
+            )
 
     @api.model
     def batch_generate(self, roc_year):
