@@ -8,15 +8,15 @@ from odoo.exceptions import ValidationError
 
 
 class HrPayrollStructure(models.Model):
-    """PR-038：薪資結構（月薪制/時薪制）"""
+    """PR-038：薪資結構（月薪制/時薪制）台灣擴充"""
     _inherit = "hr.payroll.structure"
 
-    structure_type = fields.Selection(
-        selection_add=[
+    tw_structure_type = fields.Selection(
+        selection=[
             ("monthly_tw", "月薪制（台灣）"),
             ("hourly_tw", "時薪制（台灣）"),
         ],
-        string="薪資制度",
+        string="薪資制度（台灣）",
     )
     is_tw_structure = fields.Boolean(
         string="台灣法規薪資結構",
