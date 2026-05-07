@@ -40,5 +40,45 @@
             <field name="perm_create" eval="True"/>
             <field name="perm_unlink" eval="True"/>
         </record>
+        <!-- 加班單：一般員工只能看自己 -->
+        <record id="rule_overtime_own" model="ir.rule">
+            <field name="name">加班單：員工只能查閱自己</field>
+            <field name="model_id" ref="idx_hrm_19.model_hr_overtime"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- 加班單：審批人只能看同部門 -->
+        <record id="rule_overtime_approver_dept" model="ir.rule">
+            <field name="name">加班單：審批人查閱同部門</field>
+            <field name="model_id" ref="idx_hrm_19.model_hr_overtime"/>
+            <field name="domain_force">[
+                ('employee_id.department_id', 'in',
+                    user.employee_id.child_ids.mapped('department_id').ids +
+                    [user.employee_id.department_id.id]
+                )
+            ]</field>
+            <field name="groups" eval="[(4, ref('idx_hrm_19.group_overtime_approver'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- 加班單：所有審批人 + 管理員看所有部門 -->
+        <record id="rule_overtime_all" model="ir.rule">
+            <field name="name">加班單：所有審批人全存取</field>
+            <field name="model_id" ref="idx_hrm_19.model_hr_overtime"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('idx_hrm_19.group_overtime_all_approver'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
     </data>
 </odoo>
