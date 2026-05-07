@@ -48,18 +48,6 @@ class HrEmployee(models.Model):
         help="勾選表示薪資費用分攤至多個成本中心",
     )
 
-    # 覆寫 certificate 欄位的 selection 為繁中
-    certificate = fields.Selection(
-        selection=[
-            ("graduate", "研究所以上"),
-            ("bachelor", "大學"),
-            ("master", "碩士"),
-            ("doctor", "博士"),
-            ("other", "其他"),
-        ],
-        string="最高學歷",
-    )
-
     _sql_constraints = [
         (
             "employee_number_uniq",
