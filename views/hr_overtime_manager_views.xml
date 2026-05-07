@@ -39,7 +39,7 @@
         <field name="groups_id" eval="[(6, 0, [ref('idx_hrm_19.group_overtime_approver')])]"/>
         <field name="arch" type="xml">
             <!-- 在 header 的 退回 按鈕之後，加入 核准 / 拒絕 -->
-            <button name="action_return" position="after">
+            <xpath expr="//button[@name='action_return']" position="after">
                 <button name="action_approve" string="核准" type="object"
                         class="btn-success"
                         invisible="state != 'pending'"/>
@@ -47,11 +47,11 @@
                         string="拒絕" type="action"
                         class="btn-danger"
                         invisible="state != 'pending'"/>
-            </button>
+            </xpath>
             <!-- 補休分配起始日改為可寫 -->
-            <field name="leave_validity_start" position="attributes">
+            <xpath expr="//field[@name='leave_validity_start']" position="attributes">
                 <attribute name="readonly">type != 'leave'</attribute>
-            </field>
+            </xpath>
         </field>
     </record>
 
