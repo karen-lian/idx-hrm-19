@@ -2,6 +2,7 @@ from . import res_config_settings
 from . import hr_attendance_setting
 from . import hr_late_early_criterion
 from . import hr_overtime
+from . import hr_overtime_new
 from . import hr_labor_health_insurance
 from . import hr_income_tax_pivot
 from . import hr_annual_leave

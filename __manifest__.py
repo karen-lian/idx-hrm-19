@@ -17,6 +17,7 @@
         "security/ir.model.access.csv",
         "security/ir_record_rules.xml",
         "data/ir_cron.xml",
+        "data/hr_overtime_sequence.xml",
         "data/hr_leave_type_data.xml",
         "data/hr_payroll_data.xml",
         "views/res_config_settings_views.xml",
