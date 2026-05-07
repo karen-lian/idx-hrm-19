@@ -53,8 +53,8 @@ class TestModuleI18nConsistency(IdxHrmCase):
         """所有自訂模型欄位應有 string 屬性。"""
         custom_models = [
             "hr.overtime",
-            "hr.overtime.setting",
-            "hr.overtime.type",
+            "hr.overtime.config",
+            "hr.overtime.config.type",
         ]
         for model_name in custom_models:
             m = self.env.get(model_name)

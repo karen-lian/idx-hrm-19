@@ -63,7 +63,7 @@ class IdxHrmCase(TransactionCase):
         )
 
         # ── 加班設定 ───────────────────────────────────────────────
-        cls.overtime_setting = cls.env["hr.overtime.setting"].create(
+        cls.overtime_setting = cls.env["hr.overtime.config"].create(
             {
                 "name": "測試加班設定",
                 "monthly_limit_hours": 46.0,
@@ -72,14 +72,14 @@ class IdxHrmCase(TransactionCase):
         )
 
         # 平日加班類型（勞基法 §24）
-        cls.ot_type_weekday = cls.env["hr.overtime.type"].create(
+        cls.ot_type_weekday = cls.env["hr.overtime.config.type"].create(
             {
                 "setting_id": cls.overtime_setting.id,
                 "name": "平日加班",
                 "day_type": "weekday",
             }
         )
-        cls.env["hr.overtime.type.rule"].create(
+        cls.env["hr.overtime.config.type.rule"].create(
             [
                 {
                     "overtime_type_id": cls.ot_type_weekday.id,
@@ -99,14 +99,14 @@ class IdxHrmCase(TransactionCase):
         )
 
         # 例假日加班類型（勞基法 §36）
-        cls.ot_type_holiday = cls.env["hr.overtime.type"].create(
+        cls.ot_type_holiday = cls.env["hr.overtime.config.type"].create(
             {
                 "setting_id": cls.overtime_setting.id,
                 "name": "例假日加班",
                 "day_type": "holiday",
             }
         )
-        cls.env["hr.overtime.type.rule"].create(
+        cls.env["hr.overtime.config.type.rule"].create(
             {
                 "overtime_type_id": cls.ot_type_holiday.id,
                 "hour_from": 0,
@@ -117,14 +117,14 @@ class IdxHrmCase(TransactionCase):
         )
 
         # 國定假日加班類型（勞基法 §39）
-        cls.ot_type_statutory = cls.env["hr.overtime.type"].create(
+        cls.ot_type_statutory = cls.env["hr.overtime.config.type"].create(
             {
                 "setting_id": cls.overtime_setting.id,
                 "name": "國定假日加班",
                 "day_type": "statutory_holiday",
             }
         )
-        cls.env["hr.overtime.type.rule"].create(
+        cls.env["hr.overtime.config.type.rule"].create(
             {
                 "overtime_type_id": cls.ot_type_statutory.id,
                 "hour_from": 0,

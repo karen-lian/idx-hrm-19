@@ -1,7 +1,6 @@
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
-# 加班類型代號：對應勞基法各條款加班情境
 OVERTIME_DAY_TYPE = [
     ("weekday", "平日加班"),
     ("rest_day", "休假日加班"),
@@ -15,8 +14,8 @@ COMPENSATION_TYPE = [
 ]
 
 
-class HrOvertimeSetting(models.Model):
-    _name = "hr.overtime.setting"
+class HrOvertimeConfig(models.Model):
+    _name = "hr.overtime.config"
     _description = "加班全域設定"
 
     name = fields.Char(string="設定名稱", required=True, default="加班設定")
@@ -30,7 +29,7 @@ class HrOvertimeSetting(models.Model):
         string="單日加班上限（小時）", digits=(4, 1), default=4.0
     )
     overtime_type_ids = fields.One2many(
-        "hr.overtime.type", "setting_id", string="加班類型費率表"
+        "hr.overtime.config.type", "setting_id", string="加班類型費率表"
     )
 
     _sql_constraints = [
@@ -47,13 +46,13 @@ class HrOvertimeSetting(models.Model):
     ]
 
 
-class HrOvertimeType(models.Model):
-    _name = "hr.overtime.type"
-    _description = "加班類型"
+class HrOvertimeConfigType(models.Model):
+    _name = "hr.overtime.config.type"
+    _description = "加班時段類型"
     _order = "day_type, sequence"
 
     setting_id = fields.Many2one(
-        "hr.overtime.setting", string="加班設定", required=True, ondelete="cascade"
+        "hr.overtime.config", string="加班設定", required=True, ondelete="cascade"
     )
     name = fields.Char(string="類型名稱", required=True)
     sequence = fields.Integer(default=10)
@@ -72,7 +71,7 @@ class HrOvertimeType(models.Model):
         string="補休換算比例", digits=(4, 2), default=1.0
     )
     rule_ids = fields.One2many(
-        "hr.overtime.type.rule", "overtime_type_id", string="費率規則"
+        "hr.overtime.config.type.rule", "overtime_type_id", string="費率規則"
     )
 
     _sql_constraints = [
@@ -84,20 +83,19 @@ class HrOvertimeType(models.Model):
     ]
 
 
-class HrOvertimeTypeRule(models.Model):
-    _name = "hr.overtime.type.rule"
+class HrOvertimeConfigTypeRule(models.Model):
+    _name = "hr.overtime.config.type.rule"
     _description = "加班費率規則"
     _order = "hour_from asc"
 
     overtime_type_id = fields.Many2one(
-        "hr.overtime.type", string="加班類型", required=True, ondelete="cascade"
+        "hr.overtime.config.type", string="加班類型", required=True, ondelete="cascade"
     )
     name = fields.Char(
         string="規則名稱",
         compute="_compute_name",
         store=True,
     )
-    # 時段起迄（小時，含）
     hour_from = fields.Float(string="小時起（含）", digits=(4, 1), required=True)
     hour_to = fields.Float(string="小時迄（含）", digits=(4, 1), required=True)
     # 費率倍數（例：4/3 ≈ 1.3333）
@@ -133,7 +131,6 @@ class HrOvertimeTypeRule(models.Model):
                 raise ValidationError(
                     f"小時起（{rec.hour_from}）必須小於小時迄（{rec.hour_to}）"
                 )
-            # 同一 overtime_type 內的時段不得重疊
             domain = [
                 ("id", "!=", rec.id),
                 ("overtime_type_id", "=", rec.overtime_type_id.id),
@@ -146,14 +143,12 @@ class HrOvertimeTypeRule(models.Model):
                 )
 
     def get_rate(self, hours, day_type, setting=None):
-        """依加班時數與日類型查詢對應費率與免稅標記。
-        回傳 list of dict: [{hour_from, hour_to, rate, is_tax_free, hours_in_segment}]
-        """
+        """依加班時數與日類型查詢對應費率與免稅標記。"""
         if not setting:
-            setting = self.env["hr.overtime.setting"].search(
+            setting = self.env["hr.overtime.config"].search(
                 [("active", "=", True)], limit=1
             )
-        ot_type = self.env["hr.overtime.type"].search(
+        ot_type = self.env["hr.overtime.config.type"].search(
             [
                 ("setting_id", "=", setting.id),
                 ("day_type", "=", day_type),

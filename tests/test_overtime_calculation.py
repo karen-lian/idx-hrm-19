@@ -166,7 +166,7 @@ class TestHrOvertimeModel(TransactionCase):
                 "state": "open",
             }
         )
-        cls.ot_setting = cls.env["hr.overtime.setting"].create(
+        cls.ot_setting = cls.env["hr.overtime.config"].create(
             {
                 "name": "測試加班設定",
                 "monthly_limit_hours": 46.0,
