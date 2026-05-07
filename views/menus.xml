@@ -103,19 +103,19 @@
               name="配置"
               parent="idx_hrm_19.menu_overtime_root"
               sequence="30"
-              groups="hr.group_hr_manager"/>
+              groups="idx_hrm_19.group_overtime_manager"/>
 
     <menuitem id="menu_overtime_config_setting"
               name="設定"
               parent="idx_hrm_19.menu_overtime_config"
               action="idx_hrm_19.action_hr_overtime_config"
               sequence="10"
-              groups="hr.group_hr_manager"/>
+           />
 
     <menuitem id="menu_overtime_config_type"
               name="加班時段"
               parent="idx_hrm_19.menu_overtime_config"
               action="idx_hrm_19.action_hr_overtime_config_type"
               sequence="20"
-              groups="hr.group_hr_manager"/>
+              />
 </odoo>
