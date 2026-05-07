@@ -36,9 +36,8 @@
         <field name="name">hr.overtime.manager.form</field>
         <field name="model">hr.overtime</field>
         <field name="inherit_id" ref="idx_hrm_19.view_hr_overtime_form"/>
-        <field name="groups_id" eval="[(6, 0, [ref('idx_hrm_19.group_overtime_approver')])]"/>
         <field name="arch" type="xml">
-            <!-- 在 header 的 退回 按鈕之後，加入 核准 / 拒絕 -->
+<!--             在 header 的 退回 按鈕之後，加入 核准 / 拒絕 -->
             <xpath expr="//button[@name='action_return']" position="after">
                 <button name="action_approve" string="核准" type="object"
                         class="btn-success"
@@ -114,6 +113,12 @@
         <field name="view_mode">kanban,list,form</field>
         <field name="search_view_id" ref="idx_hrm_19.view_hr_overtime_search"/>
         <field name="context">{'search_default_pending': 1}</field>
+        <field name="groups_id" eval="[(6, 0, [ref('idx_hrm_19.group_overtime_approver')])]"/>
+        <field name="view_ids" eval="[
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('idx_hrm_19.view_hr_overtime_kanban')}),
+            (0, 0, {'view_mode': 'list',   'view_id': ref('idx_hrm_19.view_hr_overtime_list')}),
+            (0, 0, {'view_mode': 'form',   'view_id': ref('idx_hrm_19.view_hr_overtime_manager_form')}),
+        ]"/>
     </record>
 
     <!-- ============================================================
