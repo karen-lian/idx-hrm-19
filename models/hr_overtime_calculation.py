@@ -187,8 +187,8 @@ class HrOvertime(models.Model):
         tracking=True,
     )
     contract_id = fields.Many2one(
-        "hr.contract",
-        string="合約",
+        "hr.version",
+        string="薪資版本",
         compute="_compute_contract_id",
         store=True,
     )
@@ -293,19 +293,19 @@ class HrOvertime(models.Model):
             if not rec.employee_id or not rec.date:
                 rec.contract_id = False
                 continue
-            contract = self.env["hr.contract"].search(
+            # 找加班日期當天有效的版本（contract_date_start <= date <= contract_date_end 或無結束日）
+            version = self.env["hr.version"].search(
                 [
                     ("employee_id", "=", rec.employee_id.id),
-                    ("state", "in", ["open", "close"]),
-                    ("date_start", "<=", rec.date),
+                    ("contract_date_start", "<=", rec.date),
                     "|",
-                    ("date_end", "=", False),
-                    ("date_end", ">=", rec.date),
+                    ("contract_date_end", "=", False),
+                    ("contract_date_end", ">=", rec.date),
                 ],
                 limit=1,
-                order="date_start desc",
+                order="contract_date_start desc",
             )
-            rec.contract_id = contract
+            rec.contract_id = version
 
     @api.depends("time_start", "time_end")
     def _compute_hours(self):

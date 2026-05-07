@@ -1,0 +1,626 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         台灣薪資 主資料：分類、繳納登記冊、薪資規則、薪資結構
+
+         設計：所有計算邏輯都在 hr.salary.rule 內（amount_python_compute）
+              - 不在 hr.payslip 加任何台灣專屬欄位
+              - 不同公司可選擇是否套用「含勞健保」之薪資結構
+              - "contract" 變數 = hr.version 物件
+    ============================================================ -->
+
+    <!-- ============================================================
+         一、薪資規則類別（hr.salary.rule.category）
+    ============================================================ -->
+    <data noupdate="1">
+        <record id="cat_taxable_add" model="hr.salary.rule.category">
+            <field name="name">應稅加項</field>
+            <field name="code">Taxable_Add</field>
+        </record>
+
+        <record id="cat_taxable_add_all" model="hr.salary.rule.category">
+            <field name="name">應稅加項全薪</field>
+            <field name="code">Taxable_Add_All</field>
+            <field name="parent_id" ref="cat_taxable_add"/>
+        </record>
+
+        <record id="cat_taxable_decrease" model="hr.salary.rule.category">
+            <field name="name">應稅減項</field>
+            <field name="code">Taxable_Decrease</field>
+        </record>
+
+        <record id="cat_taxfree_add" model="hr.salary.rule.category">
+            <field name="name">免稅加項</field>
+            <field name="code">Taxfree_Add</field>
+        </record>
+
+        <record id="cat_taxfree_add_all" model="hr.salary.rule.category">
+            <field name="name">免稅加項全薪</field>
+            <field name="code">Taxfree_Add_All</field>
+            <field name="parent_id" ref="cat_taxfree_add"/>
+        </record>
+
+        <record id="cat_taxfree_decrease" model="hr.salary.rule.category">
+            <field name="name">免稅減項</field>
+            <field name="code">Taxfree_Decrease</field>
+        </record>
+
+        <record id="cat_extra_taxable_add" model="hr.salary.rule.category">
+            <field name="name">非固定薪資加項</field>
+            <field name="code">extra_taxable_add</field>
+        </record>
+
+        <record id="cat_extra_taxable_minus" model="hr.salary.rule.category">
+            <field name="name">非固定薪資減項</field>
+            <field name="code">extra_taxable_minus</field>
+        </record>
+
+        <record id="cat_amount" model="hr.salary.rule.category">
+            <field name="name">合計類別</field>
+            <field name="code">Amount</field>
+        </record>
+
+        <record id="cat_company" model="hr.salary.rule.category">
+            <field name="name">公司繳納</field>
+            <field name="code">COMP</field>
+        </record>
+    </data>
+
+    <!-- ============================================================
+         二、繳納登記冊（hr.contribution.register）
+    ============================================================ -->
+    <data noupdate="1">
+        <record id="contribution_register_labor" model="hr.contribution.register">
+            <field name="name">勞保費</field>
+        </record>
+
+        <record id="contribution_register_health" model="hr.contribution.register">
+            <field name="name">健保費</field>
+        </record>
+
+        <record id="contribution_register_bonus" model="hr.contribution.register">
+            <field name="name">獎金</field>
+        </record>
+
+        <record id="contribution_register_labor_pension" model="hr.contribution.register">
+            <field name="name">勞工退休金</field>
+        </record>
+
+        <record id="contribution_register_income_tax" model="hr.contribution.register">
+            <field name="name">薪資所得稅款</field>
+        </record>
+
+        <record id="contribution_register_net_amount" model="hr.contribution.register">
+            <field name="name">實發金額</field>
+        </record>
+    </data>
+
+    <!-- ============================================================
+         三、薪資規則（hr.salary.rule）
+         所有計算在規則內完成，產生薪資單明細時即時運算。
+    ============================================================ -->
+    <data noupdate="1">
+
+        <!-- ====== 應稅加項 ====== -->
+
+        <!-- 基本薪金：合約月薪 -->
+        <record id="hr_rule_basic" model="hr.salary.rule">
+            <field name="name">基本薪金</field>
+            <field name="sequence" eval="1"/>
+            <field name="code">BASIC</field>
+            <field name="category_id" ref="cat_taxable_add_all"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.wage if contract else 0.0</field>
+        </record>
+
+        <!-- 主管職務加給（手動輸入金額） -->
+        <record id="hr_rule_manager_allowance" model="hr.salary.rule">
+            <field name="name">主管職務加給</field>
+            <field name="code">manager</field>
+            <field name="sequence" eval="2"/>
+            <field name="category_id" ref="cat_taxable_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+        </record>
+
+        <!-- 三節獎金 -->
+        <record id="hr_rule_festival" model="hr.salary.rule">
+            <field name="name">三節獎金</field>
+            <field name="code">Festival</field>
+            <field name="sequence" eval="6"/>
+            <field name="category_id" ref="cat_taxable_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+            <field name="register_id" ref="contribution_register_bonus"/>
+        </record>
+
+        <!-- 績效獎金 -->
+        <record id="hr_rule_performance" model="hr.salary.rule">
+            <field name="name">績效獎金</field>
+            <field name="code">Performance</field>
+            <field name="sequence" eval="7"/>
+            <field name="category_id" ref="cat_taxable_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+            <field name="register_id" ref="contribution_register_bonus"/>
+        </record>
+
+        <!-- 分紅獎金 -->
+        <record id="hr_rule_dividend" model="hr.salary.rule">
+            <field name="name">分紅獎金</field>
+            <field name="code">Dividend</field>
+            <field name="sequence" eval="8"/>
+            <field name="category_id" ref="cat_taxable_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+            <field name="register_id" ref="contribution_register_bonus"/>
+        </record>
+
+        <!-- 全勤獎金：查詢 hr.attendance.month -->
+        <record id="hr_rule_full_attendance" model="hr.salary.rule">
+            <field name="name">全勤獎金</field>
+            <field name="code">Full_attendance</field>
+            <field name="sequence" eval="9"/>
+            <field name="category_id" ref="cat_taxable_add_all"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = 0.0
+if payslip.date_from and employee:
+    Month = payslip.env['hr.attendance.month'].sudo()
+    rec = Month.search([
+        ('employee_id', '=', employee.id),
+        ('year', '=', payslip.date_from.year),
+        ('month', '=', payslip.date_from.month),
+    ], limit=1)
+    if rec:
+        result = rec.perfect_attendance_bonus or 0.0
+            </field>
+        </record>
+
+        <!-- 平日加班費（應稅）：合計當月已核准 hr.overtime.request 之 taxable_amount -->
+        <record id="hr_rule_overtime_weekdays_taxable" model="hr.salary.rule">
+            <field name="name">平日加班費（應稅）</field>
+            <field name="code">overtime_weekdays_taxable</field>
+            <field name="sequence" eval="11"/>
+            <field name="category_id" ref="cat_taxable_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = 0.0
+if payslip.date_from and payslip.date_to and employee:
+    OT = payslip.env['hr.overtime.request'].sudo()
+    requests = OT.search([
+        ('employee_id', '=', employee.id),
+        ('state', '=', 'approved'),
+        ('overtime_date', '&gt;=', payslip.date_from),
+        ('overtime_date', '&lt;=', payslip.date_to),
+    ])
+    result = sum(requests.mapped('taxable_amount'))
+            </field>
+        </record>
+
+        <record id="hr_rule_overtime_day_off_taxable" model="hr.salary.rule">
+            <field name="name">休息日加班費（應稅）</field>
+            <field name="code">overtime_day_off_taxable</field>
+            <field name="sequence" eval="12"/>
+            <field name="category_id" ref="cat_taxable_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+        </record>
+
+        <record id="hr_rule_overtime_regular_holiday_taxable" model="hr.salary.rule">
+            <field name="name">例假日加班費（應稅）</field>
+            <field name="code">overtime_regular_holiday_taxable</field>
+            <field name="sequence" eval="13"/>
+            <field name="category_id" ref="cat_taxable_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+        </record>
+
+        <record id="hr_rule_overtime_holiday_taxable" model="hr.salary.rule">
+            <field name="name">國定假日加班費（應稅）</field>
+            <field name="code">overtime_holiday_taxable</field>
+            <field name="sequence" eval="14"/>
+            <field name="category_id" ref="cat_taxable_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+        </record>
+
+        <!-- ====== 免稅加項 ====== -->
+
+        <!-- 伙食津貼：每月固定 2,400 -->
+        <record id="hr_rule_food" model="hr.salary.rule">
+            <field name="name">伙食津貼</field>
+            <field name="code">Food</field>
+            <field name="sequence" eval="51"/>
+            <field name="category_id" ref="cat_taxfree_add_all"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">2400</field>
+        </record>
+
+        <record id="hr_rule_compensatory" model="hr.salary.rule">
+            <field name="name">特休到期換現</field>
+            <field name="code">Compensatory</field>
+            <field name="sequence" eval="56"/>
+            <field name="category_id" ref="cat_taxfree_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+        </record>
+
+        <record id="hr_rule_overtime_leave" model="hr.salary.rule">
+            <field name="name">加班補休換現</field>
+            <field name="code">Overtimeleave</field>
+            <field name="sequence" eval="57"/>
+            <field name="category_id" ref="cat_taxfree_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+        </record>
+
+        <!-- 平日加班費（免稅，46h 內）：合計當月 tax_free_amount -->
+        <record id="hr_rule_overtime_weekdays" model="hr.salary.rule">
+            <field name="name">平日加班費（免稅）</field>
+            <field name="code">OVT_weekdays</field>
+            <field name="sequence" eval="61"/>
+            <field name="category_id" ref="cat_taxfree_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = 0.0
+if payslip.date_from and payslip.date_to and employee:
+    OT = payslip.env['hr.overtime.request'].sudo()
+    requests = OT.search([
+        ('employee_id', '=', employee.id),
+        ('state', '=', 'approved'),
+        ('overtime_date', '&gt;=', payslip.date_from),
+        ('overtime_date', '&lt;=', payslip.date_to),
+    ])
+    result = sum(requests.mapped('tax_free_amount'))
+            </field>
+        </record>
+
+        <record id="hr_rule_overtime_day_off" model="hr.salary.rule">
+            <field name="name">休息日加班費（免稅）</field>
+            <field name="code">OVT_day_off</field>
+            <field name="sequence" eval="62"/>
+            <field name="category_id" ref="cat_taxfree_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+        </record>
+
+        <record id="hr_rule_overtime_regular_holiday" model="hr.salary.rule">
+            <field name="name">例假日加班費（免稅）</field>
+            <field name="code">OVT_regular_holiday</field>
+            <field name="sequence" eval="63"/>
+            <field name="category_id" ref="cat_taxfree_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+        </record>
+
+        <record id="hr_rule_overtime_holiday" model="hr.salary.rule">
+            <field name="name">國定假日加班費（免稅）</field>
+            <field name="code">OVT_holiday</field>
+            <field name="sequence" eval="64"/>
+            <field name="category_id" ref="cat_taxfree_add"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+        </record>
+
+        <!-- ====== 合計類別 ====== -->
+        <record id="hr_rule_add_amount" model="hr.salary.rule">
+            <field name="name">應付合計(A)</field>
+            <field name="code">add_amount</field>
+            <field name="sequence" eval="100"/>
+            <field name="category_id" ref="cat_amount"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.Taxable_Add + categories.Taxfree_Add + categories.extra_taxable_add</field>
+        </record>
+
+        <!-- ====== 應稅扣項 ====== -->
+
+        <record id="hr_rule_leave" model="hr.salary.rule">
+            <field name="name">請假扣款</field>
+            <field name="code">Leave</field>
+            <field name="sequence" eval="101"/>
+            <field name="category_id" ref="cat_taxable_decrease"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+        </record>
+
+        <!-- 曠職扣款：日薪 × 曠職天數（從 hr.attendance.abnormal.absence.record 取） -->
+        <record id="hr_rule_absent" model="hr.salary.rule">
+            <field name="name">曠職扣款</field>
+            <field name="code">Absent</field>
+            <field name="sequence" eval="102"/>
+            <field name="category_id" ref="cat_taxable_decrease"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = 0.0
+if payslip.date_from and payslip.date_to and employee and contract:
+    Abs = payslip.env['hr.attendance.abnormal.absence.record'].sudo()
+    recs = Abs.search([
+        ('employee_id', '=', employee.id),
+        ('absent_date', '&gt;=', payslip.date_from),
+        ('absent_date', '&lt;=', payslip.date_to),
+    ])
+    days = sum(recs.mapped('absent_days'))
+    daily = (contract.wage or 0.0) / 30.0
+    result = round(daily * days, 2)
+            </field>
+        </record>
+
+        <!-- 遲到早退扣款：從 hr.attendance.month 結算讀取 -->
+        <record id="hr_rule_late_early" model="hr.salary.rule">
+            <field name="name">遲到早退扣款</field>
+            <field name="code">Late_Early</field>
+            <field name="sequence" eval="103"/>
+            <field name="category_id" ref="cat_taxable_decrease"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = 0.0
+if payslip.date_from and employee:
+    Month = payslip.env['hr.attendance.month'].sudo()
+    rec = Month.search([
+        ('employee_id', '=', employee.id),
+        ('year', '=', payslip.date_from.year),
+        ('month', '=', payslip.date_from.month),
+    ], limit=1)
+    if rec:
+        result = rec.deduction_total or 0.0
+            </field>
+        </record>
+
+        <record id="hr_rule_full_attendance_deduct" model="hr.salary.rule">
+            <field name="name">全勤獎金扣款</field>
+            <field name="code">Full_attendance_Deduct</field>
+            <field name="sequence" eval="104"/>
+            <field name="category_id" ref="cat_taxable_decrease"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+        </record>
+
+        <!-- ====== 免稅扣項 ====== -->
+
+        <!-- 勞退自提（手動於薪資單輸入百分比，預設 0） -->
+        <record id="hr_rule_retire" model="hr.salary.rule">
+            <field name="name">勞退自提</field>
+            <field name="code">Retire</field>
+            <field name="sequence" eval="151"/>
+            <field name="category_id" ref="cat_taxfree_decrease"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+            <field name="register_id" ref="contribution_register_labor_pension"/>
+        </record>
+
+        <!-- 勞保費（員工負擔）：讀合約欄位 -->
+        <record id="hr_rule_labor" model="hr.salary.rule">
+            <field name="name">勞保費</field>
+            <field name="code">Labor</field>
+            <field name="sequence" eval="156"/>
+            <field name="category_id" ref="cat_taxfree_decrease"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.labor_insurance_premium_employee if contract else 0.0</field>
+            <field name="register_id" ref="contribution_register_labor"/>
+        </record>
+
+        <!-- 健保費（員工負擔） -->
+        <record id="hr_rule_healthy" model="hr.salary.rule">
+            <field name="name">健保費</field>
+            <field name="code">Healthy</field>
+            <field name="sequence" eval="161"/>
+            <field name="category_id" ref="cat_taxfree_decrease"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.health_insurance_premium_employee if contract else 0.0</field>
+            <field name="register_id" ref="contribution_register_health"/>
+        </record>
+
+        <!-- 眷屬加保費用 -->
+        <record id="hr_rule_dependents_premium" model="hr.salary.rule">
+            <field name="name">眷屬加保費用</field>
+            <field name="code">Healthy_dependents</field>
+            <field name="sequence" eval="164"/>
+            <field name="category_id" ref="cat_taxfree_decrease"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.dependent_health_insurance_total if contract else 0.0</field>
+            <field name="register_id" ref="contribution_register_health"/>
+        </record>
+
+        <!-- ====== 合計與所得稅 ====== -->
+
+        <record id="hr_rule_decrease_amount" model="hr.salary.rule">
+            <field name="name">應扣合計(B)</field>
+            <field name="code">decrease_amount</field>
+            <field name="sequence" eval="200"/>
+            <field name="category_id" ref="cat_amount"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.Taxable_Decrease + categories.Taxfree_Decrease + categories.extra_taxable_minus</field>
+        </record>
+
+        <!-- 所得稅(B2)：依居住者/非居住者分流 -->
+        <record id="hr_rule_withhold_income_tax" model="hr.salary.rule">
+            <field name="name">所得稅(B2)</field>
+            <field name="code">WITHHOLDincome</field>
+            <field name="sequence" eval="300"/>
+            <field name="category_id" ref="cat_amount"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = 0.0
+gross = categories.Taxable_Add + categories.Taxfree_Add + categories.extra_taxable_add
+if employee and employee.no_resident:
+    settings = payslip.env['res.config.settings'].sudo().search([], limit=1, order='id desc')
+    rate = 0.18
+    if settings and 'non_resident_tax_rate' in settings._fields:
+        rate = settings.non_resident_tax_rate or 0.18
+    result = round(gross * rate, 0)
+else:
+    deps = employee.active_dependent_count if employee else 0
+    Pivot = payslip.env['hr.income.tax.pivot'].sudo()
+    tax = Pivot.get_tax(salary=gross, dependents=deps) if hasattr(Pivot, 'get_tax') else 0.0
+    result = tax if isinstance(tax, (int, float)) else 0.0
+            </field>
+            <field name="register_id" ref="contribution_register_income_tax"/>
+        </record>
+
+        <!-- 補充保費(E) -->
+        <record id="hr_rule_supplementary" model="hr.salary.rule">
+            <field name="name">補充保費(E)</field>
+            <field name="code">Supplementary</field>
+            <field name="sequence" eval="302"/>
+            <field name="category_id" ref="cat_amount"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">fix</field>
+            <field name="amount_fix">0</field>
+            <field name="register_id" ref="contribution_register_health"/>
+        </record>
+
+        <!-- 實發金額(C) = (A) - (B) - (B2) - (E) -->
+        <record id="hr_rule_net_amount" model="hr.salary.rule">
+            <field name="name">實發金額(C)=(A)-(B)-(B2)-(E)</field>
+            <field name="code">net_amount</field>
+            <field name="sequence" eval="350"/>
+            <field name="category_id" ref="cat_amount"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.Taxable_Add + categories.Taxfree_Add + categories.extra_taxable_add - categories.Taxable_Decrease - categories.Taxfree_Decrease - categories.extra_taxable_minus - WITHHOLDincome - Supplementary</field>
+            <field name="register_id" ref="contribution_register_net_amount"/>
+        </record>
+
+        <!-- ====== 公司繳納（不顯示於薪資單） ====== -->
+
+        <record id="hr_rule_company_labor" model="hr.salary.rule">
+            <field name="name">勞保費(雇主負擔)</field>
+            <field name="code">COMP_Labor</field>
+            <field name="sequence" eval="351"/>
+            <field name="category_id" ref="cat_company"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.labor_insurance_premium_employer if contract else 0.0</field>
+            <field name="register_id" ref="contribution_register_labor"/>
+            <field name="appears_on_payslip" eval="False"/>
+        </record>
+
+        <record id="hr_rule_company_health" model="hr.salary.rule">
+            <field name="name">健保費(雇主負擔)</field>
+            <field name="code">COMP_Health</field>
+            <field name="sequence" eval="352"/>
+            <field name="category_id" ref="cat_company"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.health_insurance_premium_employer if contract else 0.0</field>
+            <field name="register_id" ref="contribution_register_health"/>
+            <field name="appears_on_payslip" eval="False"/>
+        </record>
+
+        <record id="hr_rule_company_pension" model="hr.salary.rule">
+            <field name="name">勞工退休金(雇主負擔)</field>
+            <field name="code">COMP_Labor_Pension</field>
+            <field name="sequence" eval="353"/>
+            <field name="category_id" ref="cat_company"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.pension_employer if contract else 0.0</field>
+            <field name="register_id" ref="contribution_register_labor_pension"/>
+            <field name="appears_on_payslip" eval="False"/>
+        </record>
+    </data>
+
+    <!-- ============================================================
+         四、薪資結構（hr.payroll.structure）
+         安裝時自動建立兩筆：月薪制（全體員工）、時薪制
+    ============================================================ -->
+    <data noupdate="1">
+        <!-- 月薪制（全體員工）：完整含勞健保、所得稅、雇主負擔 -->
+        <record id="structure_monthly_salary" model="hr.payroll.structure">
+            <field name="code">BASIC</field>
+            <field name="name">月薪制（全體員工）</field>
+            <field name="rule_ids" eval="[(6, 0, [
+                ref('hr_rule_basic'),
+                ref('hr_rule_manager_allowance'),
+                ref('hr_rule_festival'),
+                ref('hr_rule_performance'),
+                ref('hr_rule_dividend'),
+                ref('hr_rule_full_attendance'),
+                ref('hr_rule_overtime_weekdays_taxable'),
+                ref('hr_rule_overtime_day_off_taxable'),
+                ref('hr_rule_overtime_regular_holiday_taxable'),
+                ref('hr_rule_overtime_holiday_taxable'),
+                ref('hr_rule_food'),
+                ref('hr_rule_compensatory'),
+                ref('hr_rule_overtime_leave'),
+                ref('hr_rule_overtime_weekdays'),
+                ref('hr_rule_overtime_day_off'),
+                ref('hr_rule_overtime_regular_holiday'),
+                ref('hr_rule_overtime_holiday'),
+                ref('hr_rule_add_amount'),
+                ref('hr_rule_leave'),
+                ref('hr_rule_absent'),
+                ref('hr_rule_late_early'),
+                ref('hr_rule_full_attendance_deduct'),
+                ref('hr_rule_retire'),
+                ref('hr_rule_labor'),
+                ref('hr_rule_healthy'),
+                ref('hr_rule_dependents_premium'),
+                ref('hr_rule_decrease_amount'),
+                ref('hr_rule_withhold_income_tax'),
+                ref('hr_rule_supplementary'),
+                ref('hr_rule_net_amount'),
+                ref('hr_rule_company_labor'),
+                ref('hr_rule_company_health'),
+                ref('hr_rule_company_pension'),
+            ])]"/>
+        </record>
+
+        <!-- 時薪制：精簡規則（基本薪、加班費、勞健保、所得稅、實發） -->
+        <record id="structure_hourly_salary" model="hr.payroll.structure">
+            <field name="code">PART_TIME</field>
+            <field name="name">時薪制</field>
+            <field name="rule_ids" eval="[(6, 0, [
+                ref('hr_rule_basic'),
+                ref('hr_rule_overtime_weekdays_taxable'),
+                ref('hr_rule_overtime_day_off_taxable'),
+                ref('hr_rule_food'),
+                ref('hr_rule_overtime_weekdays'),
+                ref('hr_rule_overtime_day_off'),
+                ref('hr_rule_add_amount'),
+                ref('hr_rule_leave'),
+                ref('hr_rule_absent'),
+                ref('hr_rule_late_early'),
+                ref('hr_rule_labor'),
+                ref('hr_rule_healthy'),
+                ref('hr_rule_dependents_premium'),
+                ref('hr_rule_retire'),
+                ref('hr_rule_decrease_amount'),
+                ref('hr_rule_withhold_income_tax'),
+                ref('hr_rule_net_amount'),
+                ref('hr_rule_company_labor'),
+                ref('hr_rule_company_health'),
+                ref('hr_rule_company_pension'),
+            ])]"/>
+        </record>
+    </data>
+</odoo>

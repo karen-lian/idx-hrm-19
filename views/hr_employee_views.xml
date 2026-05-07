@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- PR-010/011/012/013：員工表單擴充欄位 -->
+    <record id="view_hr_employee_form_idx" model="ir.ui.view">
+        <field name="name">hr.employee.form.idx</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <!-- 在員工編號附近加入 employee_number -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="employee_number"/>
+            </xpath>
+
+            <!-- 在 Private Information tab 加入台灣欄位 -->
+            <xpath expr="//page[@name='personal_information']" position="inside">
+                <separator string="台灣法規資訊"/>
+                <group col="2">
+                    <group>
+                        <field name="no_resident"/>
+                        <field name="is_no_punch"/>
+                        <field name="is_distribute" invisible="1"/>
+                        <field name="conversion_date"/>
+                    </group>
+                    <group>
+                        <field name="job_tenure" readonly="1"/>
+                        <field name="substitute_id"/>
+                        <field name="overtime_manager_id"/>
+                    </group>
+                </group>
+
+                <separator string="外籍員工資訊" invisible="not is_no_pr"/>
+                <group col="2" invisible="not is_no_pr">
+                    <group>
+                        <field name="is_no_pr"/>
+                        <field name="permit_no"/>
+                        <field name="permit_expiry"/>
+                        <field name="permit_alert_days"/>
+                    </group>
+                    <group>
+                        <field name="work_permit_no"/>
+                        <field name="work_permit_expiry"/>
+                    </group>
+                </group>
+                <field name="is_no_pr" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
