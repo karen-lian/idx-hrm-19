@@ -10,11 +10,11 @@
                 <field name="leave_days"/>
                 <field name="is_incremental"/>
                 <field name="incremental_base_tenure"
-                       attrs="{'column_invisible': [('parent.is_incremental','=',False)]}"/>
+                       column_invisible="not parent.is_incremental"/>
                 <field name="incremental_base_days"
-                       attrs="{'column_invisible': [('parent.is_incremental','=',False)]}"/>
+                       column_invisible="not parent.is_incremental"/>
                 <field name="incremental_max_days"
-                       attrs="{'column_invisible': [('parent.is_incremental','=',False)]}"/>
+                       column_invisible="not parent.is_incremental"/>
             </list>
         </field>
     </record>

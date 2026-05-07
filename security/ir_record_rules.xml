@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PR-060：Record Rules（資料列存取控制） -->
+<odoo>
+    <data>
+        <!-- 薪資單：一般員工只能看自己的 -->
+        <record id="rule_payslip_employee_own" model="ir.rule">
+            <field name="name">薪資單：員工只能查閱自己</field>
+            <field name="model_id" ref="payroll.model_hr_payslip"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- 薪資單：部門主管可看所屬部門 -->
+        <record id="rule_payslip_manager_dept" model="ir.rule">
+            <field name="name">薪資單：主管查閱所屬部門</field>
+            <field name="model_id" ref="payroll.model_hr_payslip"/>
+            <field name="domain_force">[
+                '|',
+                ('employee_id.user_id', '=', user.id),
+                ('employee_id.department_id.manager_id.user_id', '=', user.id)
+            ]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- 薪資單：薪資管理員無限制 -->
+        <record id="rule_payslip_payroll_all" model="ir.rule">
+            <field name="name">薪資單：薪資管理員全存取</field>
+            <field name="model_id" ref="payroll.model_hr_payslip"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('payroll.group_payroll_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- 加班申請：員工只能看自己 -->
+        <record id="rule_overtime_request_own" model="ir.rule">
+            <field name="name">加班申請：員工只能查閱自己</field>
+            <field name="model_id" ref="model_hr_overtime_request"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- 加班申請：主管可看所屬部門 -->
+        <record id="rule_overtime_request_manager" model="ir.rule">
+            <field name="name">加班申請：主管查閱部門</field>
+            <field name="model_id" ref="model_hr_overtime_request"/>
+            <field name="domain_force">[
+                '|',
+                ('employee_id.user_id', '=', user.id),
+                ('employee_id.department_id.manager_id.user_id', '=', user.id)
+            ]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+    </data>
+</odoo>

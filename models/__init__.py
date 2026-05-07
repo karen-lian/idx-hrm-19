@@ -8,3 +8,16 @@ from . import hr_annual_leave
 from . import hr_holiday_type_setting
 from . import cron_methods
 from . import hr_overtime_calculation
+from . import hr_employee
+from . import hr_employee_foreign
+from . import hr_version_ext
+from . import hr_dependents
+from . import hr_attendance_ext
+from . import hr_attendance_abnormal
+from . import hr_leave_ext
+from . import hr_overtime_request
+from . import hr_payslip_ext
+from . import hr_income_tax_report
+from . import hr_onboarding_offboarding
+from . import hr_holiday_import
+from . import hr_employee_security
