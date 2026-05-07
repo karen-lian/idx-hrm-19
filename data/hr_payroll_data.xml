@@ -183,7 +183,7 @@ if payslip.date_from and employee:
             </field>
         </record>
 
-        <!-- 平日加班費（應稅）：合計當月已核准 hr.overtime.request 之 taxable_amount -->
+        <!-- 平日加班費（應稅）：合計當月已核准 hr.overtime 之 taxable_amount -->
         <record id="hr_rule_overtime_weekdays_taxable" model="hr.salary.rule">
             <field name="name">平日加班費（應稅）</field>
             <field name="code">overtime_weekdays_taxable</field>
@@ -194,12 +194,12 @@ if payslip.date_from and employee:
             <field name="amount_python_compute">
 result = 0.0
 if payslip.date_from and payslip.date_to and employee:
-    OT = payslip.env['hr.overtime.request'].sudo()
+    OT = payslip.env['hr.overtime'].sudo()
     requests = OT.search([
         ('employee_id', '=', employee.id),
         ('state', '=', 'approved'),
-        ('overtime_date', '&gt;=', payslip.date_from),
-        ('overtime_date', '&lt;=', payslip.date_to),
+        ('request_date', '&gt;=', payslip.date_from),
+        ('request_date', '&lt;=', payslip.date_to),
     ])
     result = sum(requests.mapped('taxable_amount'))
             </field>
@@ -279,12 +279,12 @@ if payslip.date_from and payslip.date_to and employee:
             <field name="amount_python_compute">
 result = 0.0
 if payslip.date_from and payslip.date_to and employee:
-    OT = payslip.env['hr.overtime.request'].sudo()
+    OT = payslip.env['hr.overtime'].sudo()
     requests = OT.search([
         ('employee_id', '=', employee.id),
         ('state', '=', 'approved'),
-        ('overtime_date', '&gt;=', payslip.date_from),
-        ('overtime_date', '&lt;=', payslip.date_to),
+        ('request_date', '&gt;=', payslip.date_from),
+        ('request_date', '&lt;=', payslip.date_to),
     ])
     result = sum(requests.mapped('tax_free_amount'))
             </field>

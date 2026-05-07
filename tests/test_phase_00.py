@@ -139,7 +139,7 @@ class TestHrLateEarlyCriterion(IdxHrmCase):
 
 @tagged("idx_hrm", "phase00", "pr005")
 class TestHrOvertimeSetting(IdxHrmCase):
-    """PR-005：加班設定與費率表（hr.overtime.setting / hr.overtime.type / hr.overtime.type.rule）。"""
+    """PR-005：加班設定與費率表（hr.overtime.config / hr.overtime.config.type / hr.overtime.config.type.rule）。"""
 
     def test_overtime_setting_exists(self):
         """加班設定應存在。"""
@@ -147,7 +147,7 @@ class TestHrOvertimeSetting(IdxHrmCase):
 
     def test_weekday_type_rate_4_3(self):
         """平日加班前 2 小時費率應為 4/3。"""
-        rule = self.env["hr.overtime.type.rule"].search(
+        rule = self.env["hr.overtime.config.type.rule"].search(
             [
                 ("overtime_type_id", "=", self.ot_type_weekday.id),
                 ("hour_from", "=", 0),
@@ -160,7 +160,7 @@ class TestHrOvertimeSetting(IdxHrmCase):
 
     def test_weekday_type_rate_5_3(self):
         """平日加班第 3~4 小時費率應為 5/3。"""
-        rule = self.env["hr.overtime.type.rule"].search(
+        rule = self.env["hr.overtime.config.type.rule"].search(
             [
                 ("overtime_type_id", "=", self.ot_type_weekday.id),
                 ("hour_from", "=", 2),

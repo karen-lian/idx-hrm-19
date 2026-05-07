@@ -1,33 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- PR-062~070：IDX HRM 完整選單結構 -->
 <odoo>
     <!-- ============================================================
-         四、加班管理（獨立根選單）
-    ============================================================ -->
-    <menuitem id="menu_idx_hrm_overtime"
-              name="加班管理"
-              sequence="40"/>
-
-    <menuitem id="menu_hr_overtime_request"
-              name="加班申請"
-              parent="menu_idx_hrm_overtime"
-              action="action_hr_overtime_request"
-              sequence="10"/>
-
-    <menuitem id="menu_hr_overtime_statistics"
-              name="加班統計"
-              parent="menu_idx_hrm_overtime"
-              action="action_hr_overtime_statistics"
-              sequence="20"
-              groups="hr.group_hr_manager"/>
-
-    <!-- ============================================================
-         一、員工管理（沿用 hr 既有根選單）
-    ============================================================ -->
-
-
-    <!-- ============================================================
-         二、出勤管理（沿用 hr_attendance 既有根選單）
+         出勤管理（沿用 hr_attendance 既有根選單）
     ============================================================ -->
     <menuitem id="menu_hr_attendance_online"
               name="補登出勤申請"
@@ -49,11 +23,9 @@
               sequence="30"
               groups="hr.group_hr_manager"/>
 
-
     <!-- ============================================================
-         五、薪資管理（繼承 payroll 既有根選單）
+         薪資管理（繼承 payroll 既有根選單）
     ============================================================ -->
-
     <menuitem id="menu_hr_income_tax"
               name="年度扣繳憑單"
               parent="payroll.payroll_menu_root"
@@ -69,7 +41,7 @@
               groups="payroll.group_payroll_manager"/>
 
     <!-- ============================================================
-         六、系統設定（沿用 hr 既有設定選單）
+         系統設定（沿用 hr 既有設定選單）
     ============================================================ -->
     <menuitem id="menu_hr_attendance_setting"
               name="出勤設定"
@@ -82,12 +54,6 @@
               parent="hr.menu_human_resources_configuration"
               action="action_hr_late_early_criterion"
               sequence="20"/>
-
-    <menuitem id="menu_hr_overtime_setting"
-              name="加班設定"
-              parent="menu_idx_hrm_overtime"
-              action="action_hr_overtime_setting"
-              sequence="30"/>
 
     <menuitem id="menu_hr_labor_health_insurance"
               name="勞健保費率等級表"
