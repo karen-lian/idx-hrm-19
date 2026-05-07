@@ -33,6 +33,7 @@
         "views/hr_dependents_views.xml",
         "views/hr_attendance_ext_views.xml",
         "views/hr_overtime_request_form.xml",
+        "views/hr_overtime_manager_views.xml",
         "views/menus.xml",
     ],
     "application": False,
