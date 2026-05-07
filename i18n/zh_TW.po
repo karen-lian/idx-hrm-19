@@ -1,19 +1,15 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 #	* idx_hrm_19
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-06 00:00+0000\n"
-"PO-Revision-Date: 2026-05-06 00:00+0000\n"
-"Last-Translator: \n"
-"Language-Team: \n"
-"Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: \n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #. module: hr
 #: model:ir.model.fields.selection,name:hr.selection__hr_employee__certificate__graduate
@@ -38,4 +34,4 @@ msgstr "博士"
 #. module: hr
 #: model:ir.model.fields.selection,name:hr.selection__hr_employee__certificate__other
 msgid "Other"
-msgstr "其他"
+msgstr "高中職以下"
