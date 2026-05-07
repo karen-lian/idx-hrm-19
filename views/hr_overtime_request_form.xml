@@ -122,8 +122,8 @@
                         domain="[('state', '=', 'approved')]"/>
                 <separator/>
                 <filter name="filter_request_date" string="申請日期"
-                        date="request_date" default_period="this_month"/>
-                <group expand="0" string="分組">
+                        date="request_date" default_period="month"/>
+                <group>
                     <filter string="員工" name="group_employee"
                             context="{'group_by': 'employee_id'}"/>
                     <filter string="狀態" name="group_state"
