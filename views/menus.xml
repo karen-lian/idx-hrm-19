@@ -3,42 +3,42 @@
     <!-- ============================================================
          出勤管理（沿用 hr_attendance 既有根選單）
     ============================================================ -->
-    <menuitem id="menu_hr_attendance_online"
-              name="補登出勤申請"
-              parent="hr_attendance.menu_hr_attendance_root"
-              action="action_hr_attendance_online"
-              sequence="10"/>
+<!--    <menuitem id="menu_hr_attendance_online"-->
+<!--              name="補登出勤申請"-->
+<!--              parent="hr_attendance.menu_hr_attendance_root"-->
+<!--              action="action_hr_attendance_online"-->
+<!--              sequence="10"/>-->
 
-    <menuitem id="menu_hr_attendance_abnormal"
-              name="出勤異常記錄"
-              parent="hr_attendance.menu_hr_attendance_root"
-              action="action_hr_attendance_abnormal"
-              sequence="20"
-              groups="hr.group_hr_manager"/>
+<!--    <menuitem id="menu_hr_attendance_abnormal"-->
+<!--              name="出勤異常記錄"-->
+<!--              parent="hr_attendance.menu_hr_attendance_root"-->
+<!--              action="action_hr_attendance_abnormal"-->
+<!--              sequence="20"-->
+<!--              groups="hr.group_hr_manager"/>-->
 
-    <menuitem id="menu_hr_attendance_month"
-              name="月度出勤結算"
-              parent="hr_attendance.menu_hr_attendance_root"
-              action="action_hr_attendance_month"
-              sequence="30"
-              groups="hr.group_hr_manager"/>
+<!--    <menuitem id="menu_hr_attendance_month"-->
+<!--              name="月度出勤結算"-->
+<!--              parent="hr_attendance.menu_hr_attendance_root"-->
+<!--              action="action_hr_attendance_month"-->
+<!--              sequence="30"-->
+<!--              groups="hr.group_hr_manager"/>-->
 
-    <!-- ============================================================
-         薪資管理（繼承 payroll 既有根選單）
-    ============================================================ -->
-    <menuitem id="menu_hr_income_tax"
-              name="年度扣繳憑單"
-              parent="payroll.payroll_menu_root"
-              action="action_hr_income_tax"
-              sequence="30"
-              groups="payroll.group_payroll_manager"/>
+<!--    &lt;!&ndash; ============================================================-->
+<!--         薪資管理（繼承 payroll 既有根選單）-->
+<!--    ============================================================ &ndash;&gt;-->
+<!--    <menuitem id="menu_hr_income_tax"-->
+<!--              name="年度扣繳憑單"-->
+<!--              parent="payroll.payroll_menu_root"-->
+<!--              action="action_hr_income_tax"-->
+<!--              sequence="30"-->
+<!--              groups="payroll.group_payroll_manager"/>-->
 
-    <menuitem id="menu_hr_payroll_transfers"
-              name="銀行薪資轉帳"
-              parent="payroll.payroll_menu_root"
-              action="action_hr_payroll_transfers"
-              sequence="40"
-              groups="payroll.group_payroll_manager"/>
+<!--    <menuitem id="menu_hr_payroll_transfers"-->
+<!--              name="銀行薪資轉帳"-->
+<!--              parent="payroll.payroll_menu_root"-->
+<!--              action="action_hr_payroll_transfers"-->
+<!--              sequence="40"-->
+<!--              groups="payroll.group_payroll_manager"/>-->
 
     <!-- ============================================================
          系統設定（沿用 hr 既有設定選單）
