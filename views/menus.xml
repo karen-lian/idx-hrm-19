@@ -78,4 +78,44 @@
               parent="hr_holidays.menu_hr_holidays_configuration"
               action="action_hr_holiday_type_setting"
               sequence="70"/>
+
+    <!-- ============================================================
+         加班 頂層選單
+    ============================================================ -->
+    <menuitem id="menu_overtime_root"
+              name="加班"
+              sequence="99"/>
+
+    <menuitem id="menu_overtime_request"
+              name="加班申請"
+              parent="idx_hrm_19.menu_overtime_root"
+              action="idx_hrm_19.action_hr_overtime_request"
+              sequence="10"/>
+
+    <menuitem id="menu_overtime_manager"
+              name="加班管理"
+              parent="idx_hrm_19.menu_overtime_root"
+              action="idx_hrm_19.action_hr_overtime_manager"
+              sequence="20"
+              groups="idx_hrm_19.group_overtime_approver"/>
+
+    <menuitem id="menu_overtime_config"
+              name="配置"
+              parent="idx_hrm_19.menu_overtime_root"
+              sequence="30"
+              groups="hr.group_hr_manager"/>
+
+    <menuitem id="menu_overtime_config_setting"
+              name="設定"
+              parent="idx_hrm_19.menu_overtime_config"
+              action="idx_hrm_19.action_hr_overtime_config"
+              sequence="10"
+              groups="hr.group_hr_manager"/>
+
+    <menuitem id="menu_overtime_config_type"
+              name="加班時段"
+              parent="idx_hrm_19.menu_overtime_config"
+              action="idx_hrm_19.action_hr_overtime_config_type"
+              sequence="20"
+              groups="hr.group_hr_manager"/>
 </odoo>
