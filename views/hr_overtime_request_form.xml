@@ -121,8 +121,8 @@
                 <filter string="已批准" name="approved"
                         domain="[('state', '=', 'approved')]"/>
                 <separator/>
-                <filter string="本月" name="this_month"
-                        domain="[('request_date', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_request_date" string="申請日期"
+                        date="request_date" default_period="this_month"/>
                 <group expand="0" string="分組">
                     <filter string="員工" name="group_employee"
                             context="{'group_by': 'employee_id'}"/>
