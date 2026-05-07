@@ -7,13 +7,13 @@ class TestHrOvertimeSetting(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.setting = cls.env["hr.overtime.setting"].create(
+        cls.setting = cls.env["hr.overtime.config"].create(
             {"name": "測試設定", "monthly_limit_hours": 46.0, "daily_limit_hours": 4.0}
         )
-        cls.ot_weekday = cls.env["hr.overtime.type"].create(
+        cls.ot_weekday = cls.env["hr.overtime.config.type"].create(
             {"setting_id": cls.setting.id, "name": "平日加班", "day_type": "weekday"}
         )
-        cls.env["hr.overtime.type.rule"].create(
+        cls.env["hr.overtime.config.type.rule"].create(
             [
                 {"overtime_type_id": cls.ot_weekday.id, "hour_from": 0, "hour_to": 2,
                  "rate": round(4 / 3, 4), "is_tax_free": False},
@@ -22,10 +22,10 @@ class TestHrOvertimeSetting(TransactionCase):
             ]
         )
         # 例假日加班（勞基法 §36：前 8 小時免稅，第 9-10 小時 2 倍應稅）
-        cls.ot_mandatory = cls.env["hr.overtime.type"].create(
+        cls.ot_mandatory = cls.env["hr.overtime.config.type"].create(
             {"setting_id": cls.setting.id, "name": "例假日加班", "day_type": "mandatory_rest"}
         )
-        cls.env["hr.overtime.type.rule"].create(
+        cls.env["hr.overtime.config.type.rule"].create(
             [
                 {"overtime_type_id": cls.ot_mandatory.id, "hour_from": 0, "hour_to": 8,
                  "rate": 1.0, "is_tax_free": True},
@@ -58,7 +58,7 @@ class TestHrOvertimeSetting(TransactionCase):
     def test_hour_range_reverse_rejected(self):
         """PR-005: hour_from >= hour_to 應被拒絕。"""
         with self.assertRaises(ValidationError):
-            self.env["hr.overtime.type.rule"].create(
+            self.env["hr.overtime.config.type.rule"].create(
                 {"overtime_type_id": self.ot_weekday.id,
                  "hour_from": 5, "hour_to": 3, "rate": 1.5}
             )
