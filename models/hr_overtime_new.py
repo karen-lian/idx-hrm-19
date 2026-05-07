@@ -157,7 +157,9 @@ class HrOvertime(models.Model):
 
     def _create_leave_allocation(self):
         self.ensure_one()
-        leave_type = self.env.ref("idx_hrm_19.leave_type_overtime", raise_if_not_found=False)
+        leave_type = self.env["hr.leave.type"].search(
+            [("code", "=", "Overtime")], limit=1
+        )
         if not leave_type:
             return
         alloc = self.env["hr.leave.allocation"].create({
