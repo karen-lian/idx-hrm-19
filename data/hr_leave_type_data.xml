@@ -141,5 +141,15 @@
 <!--            <field name="pay_ratio">1.0</field>-->
 <!--            <field name="count_as_attendance">True</field>-->
 <!--        </record>-->
+        <!-- 加班補休假（code=Overtime，供 hr.overtime 核准後自動分配使用） -->
+        <record id="leave_type_overtime" model="hr.leave.type">
+            <field name="name">加班補休假</field>
+            <field name="code">Overtime</field>
+            <field name="time_type">leave</field>
+            <field name="request_unit">hour</field>
+            <field name="leave_validation_type">manager</field>
+            <field name="allocation_validation_type">officer</field>
+            <field name="requires_allocation">yes</field>
+        </record>
     </data>
 </odoo>
