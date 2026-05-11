@@ -84,6 +84,7 @@
     ============================================================ -->
     <menuitem id="menu_overtime_root"
               name="加班"
+              web_icon="idx_hrm_19,static/description/overtime_icon.png"
               sequence="99"/>
 
     <menuitem id="menu_overtime_request"
@@ -108,9 +109,9 @@
     <menuitem id="menu_overtime_config_setting"
               name="設定"
               parent="idx_hrm_19.menu_overtime_config"
-              action="idx_hrm_19.action_hr_overtime_config"
+              action="idx_hrm_19.action_overtime_config_settings"
               sequence="10"
-           />
+              groups="base.group_system"/>
 
     <menuitem id="menu_overtime_config_type"
               name="加班時段"

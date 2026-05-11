@@ -3,9 +3,9 @@ from odoo.exceptions import ValidationError
 
 OVERTIME_DAY_TYPE = [
     ("weekday", "平日加班"),
-    ("rest_day", "休假日加班"),
-    ("mandatory_rest", "例假日加班"),
-    ("public_holiday", "國定假日加班"),
+    ("day_off", "休假日加班"),
+    ("regular_holiday", "例假日加班"),
+    ("regular_holiday_national_holiday", "國定假日加班"),
 ]
 
 COMPENSATION_TYPE = [
@@ -14,166 +14,147 @@ COMPENSATION_TYPE = [
 ]
 
 
-class HrOvertimeConfig(models.Model):
-    _name = "hr.overtime.config"
-    _description = "加班全域設定"
+class HrOvertimeType(models.Model):
+    _name = "hr.overtime.type"
+    _description = "加班時段"
 
-    name = fields.Char(string="設定名稱", required=True, default="加班設定")
-    active = fields.Boolean(default=True)
-    # 每月加班上限（勞基法 §32：每月不得超過 46 小時）
-    monthly_limit_hours = fields.Float(
-        string="每月加班上限（小時）", digits=(5, 1), default=46.0
-    )
-    # 單日加班上限（勞基法 §32：每日不得超過 4 小時）
-    daily_limit_hours = fields.Float(
-        string="單日加班上限（小時）", digits=(4, 1), default=4.0
-    )
-    overtime_type_ids = fields.One2many(
-        "hr.overtime.config.type", "setting_id", string="加班類型費率表"
-    )
-
-    _sql_constraints = [
-        (
-            "monthly_limit_positive",
-            "CHECK(monthly_limit_hours > 0)",
-            "每月加班上限必須大於 0",
-        ),
-        (
-            "daily_limit_positive",
-            "CHECK(daily_limit_hours > 0)",
-            "單日加班上限必須大於 0",
-        ),
-    ]
-
-
-class HrOvertimeConfigType(models.Model):
-    _name = "hr.overtime.config.type"
-    _description = "加班時段類型"
-    _order = "day_type, sequence"
-
-    setting_id = fields.Many2one(
-        "hr.overtime.config", string="加班設定", required=True, ondelete="cascade"
-    )
-    name = fields.Char(string="類型名稱", required=True)
-    sequence = fields.Integer(default=10)
-    day_type = fields.Selection(
-        selection=OVERTIME_DAY_TYPE,
-        string="加班日類型",
+    name = fields.Char(string="加班時段", required=True)
+    type = fields.Selection(
+        selection=[("cash", "加班"), ("leave", "補休")],
+        string="加班類型",
         required=True,
     )
-    compensation_type = fields.Selection(
-        selection=COMPENSATION_TYPE,
-        string="預設補償方式",
-        default="cash",
+    leave_type_id = fields.Many2one("hr.leave.type", string="請假類型")
+    rule_line_ids = fields.One2many(
+        "hr.overtime.type.rule", "type_line_id", string="費率規則"
     )
-    # 補休換算比例（1 小時加班 = N 小時補休）
-    leave_conversion_ratio = fields.Float(
-        string="補休換算比例", digits=(4, 2), default=1.0
+    leave_line_ids = fields.One2many(
+        "hr.overtime.type.leave", "type_line_id", string="休息時間"
     )
-    rule_ids = fields.One2many(
-        "hr.overtime.config.type.rule", "overtime_type_id", string="費率規則"
+    overtime_type_date_rule = fields.Selection(
+        selection=OVERTIME_DAY_TYPE,
+        string="加班日期類型",
     )
-
-    _sql_constraints = [
-        (
-            "leave_conversion_ratio_positive",
-            "CHECK(leave_conversion_ratio > 0)",
-            "補休換算比例必須大於 0",
-        ),
-    ]
-
-
-class HrOvertimeConfigTypeRule(models.Model):
-    _name = "hr.overtime.config.type.rule"
-    _description = "加班費率規則"
-    _order = "hour_from asc"
-
-    overtime_type_id = fields.Many2one(
-        "hr.overtime.config.type", string="加班類型", required=True, ondelete="cascade"
+    request_unit = fields.Selection(
+        selection=[("hour", "小時"), ("half_an_hour", "半小時")],
+        default="half_an_hour",
+        string="加班最短時長",
+        required=True,
     )
-    name = fields.Char(
-        string="規則名稱",
-        compute="_compute_name",
-        store=True,
-    )
-    hour_from = fields.Float(string="小時起（含）", digits=(4, 1), required=True)
-    hour_to = fields.Float(string="小時迄（含）", digits=(4, 1), required=True)
-    # 費率倍數（例：4/3 ≈ 1.3333）
-    rate = fields.Float(string="費率倍數", digits=(6, 4), required=True)
-    # 是否為免稅加班費（例假日/國定假日之基本保障部分）
-    is_tax_free = fields.Boolean(string="免稅", default=False)
+    minimum_overtime = fields.Boolean(string="時數最小以八小時計算", default=False)
 
-    _sql_constraints = [
-        (
-            "rate_positive",
-            "CHECK(rate > 0)",
-            "費率倍數必須大於 0",
-        ),
-        (
-            "hour_from_positive",
-            "CHECK(hour_from >= 0)",
-            "小時起不得為負數",
-        ),
-    ]
-
-    @api.depends("hour_from", "hour_to", "rate", "is_tax_free")
-    def _compute_name(self):
+    @api.constrains("request_unit")
+    def check_request_unit(self):
         for rec in self:
-            tax_label = "（免稅）" if rec.is_tax_free else ""
-            rec.name = (
-                f"第 {rec.hour_from:.0f}~{rec.hour_to:.0f} 小時：×{rec.rate:.4f}{tax_label}"
-            )
+            if rec.request_unit == "hour":
+                leave_lines = self.env["hr.overtime.type.leave"].search(
+                    [("type_line_id", "=", rec.id)]
+                )
+                for line in leave_lines:
+                    if line.hrs % 1 != 0:
+                        raise ValidationError(
+                            "休息時間中有總時數最小單位不為「小時」的資料！"
+                        )
 
-    @api.constrains("hour_from", "hour_to")
+
+class HrOvertimeTypeRule(models.Model):
+    _name = "hr.overtime.type.rule"
+    _description = "加班類型規則"
+
+    type_line_id = fields.Many2one(
+        "hr.overtime.type", string="加班時段", ondelete="cascade"
+    )
+    name = fields.Char(string="名稱", required=True)
+    from_hrs = fields.Integer(string="區間（開始）")
+    to_hrs = fields.Integer(string="區間（結束）")
+    hrs_amount = fields.Float(string="費率", digits=(2, 8))
+    no_taxable = fields.Boolean(string="不計入加班免稅總時數上限", default=False)
+
+    @api.constrains("from_hrs", "to_hrs")
     def _check_hour_range(self):
         for rec in self:
-            if rec.hour_from >= rec.hour_to:
+            if rec.from_hrs >= rec.to_hrs:
                 raise ValidationError(
-                    f"小時起（{rec.hour_from}）必須小於小時迄（{rec.hour_to}）"
+                    f"區間開始（{rec.from_hrs}）必須小於區間結束（{rec.to_hrs}）"
                 )
             domain = [
                 ("id", "!=", rec.id),
-                ("overtime_type_id", "=", rec.overtime_type_id.id),
-                ("hour_from", "<", rec.hour_to),
-                ("hour_to", ">", rec.hour_from),
+                ("type_line_id", "=", rec.type_line_id.id),
+                ("from_hrs", "<", rec.to_hrs),
+                ("to_hrs", ">", rec.from_hrs),
             ]
             if self.search_count(domain):
                 raise ValidationError(
-                    f"時段 {rec.hour_from}~{rec.hour_to} 小時與現有規則重疊"
+                    f"時段 {rec.from_hrs}～{rec.to_hrs} 與現有規則重疊"
                 )
 
-    def get_rate(self, hours, day_type, setting=None):
+    def get_rate(self, hours, day_type):
         """依加班時數與日類型查詢對應費率與免稅標記。"""
-        if not setting:
-            setting = self.env["hr.overtime.config"].search(
-                [("active", "=", True)], limit=1
-            )
-        ot_type = self.env["hr.overtime.config.type"].search(
-            [
-                ("setting_id", "=", setting.id),
-                ("day_type", "=", day_type),
-            ],
+        ot_type = self.env["hr.overtime.type"].search(
+            [("overtime_type_date_rule", "=", day_type)],
             limit=1,
         )
         if not ot_type:
             return []
         result = []
         remaining = hours
-        for rule in ot_type.rule_ids.sorted("hour_from"):
+        for rule in ot_type.rule_line_ids.sorted("from_hrs"):
             if remaining <= 0:
                 break
-            seg_start = rule.hour_from
-            seg_end = rule.hour_to
+            seg_start = rule.from_hrs
+            seg_end = rule.to_hrs
             seg_hours = min(remaining, seg_end - seg_start)
             if seg_hours > 0:
                 result.append(
                     {
                         "hour_from": seg_start,
                         "hour_to": seg_end,
-                        "rate": rule.rate,
-                        "is_tax_free": rule.is_tax_free,
+                        "rate": rule.hrs_amount,
+                        "is_tax_free": rule.no_taxable,
                         "hours_in_segment": seg_hours,
                     }
                 )
                 remaining -= seg_hours
         return result
+
+
+class HrOvertimeTypeLeave(models.Model):
+    _name = "hr.overtime.type.leave"
+    _description = "加班類型休息時間"
+    _order = "hour_from"
+
+    type_line_id = fields.Many2one(
+        "hr.overtime.type", string="加班時段", ondelete="cascade"
+    )
+    name = fields.Char(string="名稱", required=True)
+    hour_from = fields.Float(string="開始時間", required=True)
+    hour_to = fields.Float(string="結束時間", required=True)
+    hrs = fields.Float(string="總時數", compute="_compute_total_hrs", store=True)
+
+    @api.depends("hour_from", "hour_to")
+    def _compute_total_hrs(self):
+        for rec in self:
+            rec.hrs = rec.hour_to - rec.hour_from
+
+    @api.constrains("hour_from", "hour_to")
+    def check_typetime(self):
+        for rec in self:
+            if rec.hour_from >= rec.hour_to:
+                raise ValidationError("結束時間不可小於等於開始時間")
+            if rec.hour_to % 0.5 != 0 or rec.hour_from % 0.5 != 0:
+                raise ValidationError("開始或結束時間須為整點或 30 分")
+            time_diff = rec.hour_to - rec.hour_from
+            if rec.type_line_id.request_unit == "half_an_hour" and time_diff % 0.5 != 0:
+                raise ValidationError(
+                    "加班最短時長設為「半小時」時，休息時間最小單位也須設為半小時"
+                )
+            if rec.type_line_id.request_unit == "hour" and time_diff % 1 != 0:
+                raise ValidationError(
+                    "加班最短時長設為「小時」時，休息時間最小單位也須設為一小時"
+                )
+
+    @api.onchange("hour_from", "hour_to")
+    def _onchange_hours(self):
+        self.hour_from = max(0.0, min(self.hour_from, 23.99))
+        self.hour_to = max(0.0, min(self.hour_to, 23.99))
+        self.hour_to = max(self.hour_to, self.hour_from)

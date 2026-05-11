@@ -24,6 +24,7 @@
         "views/hr_attendance_setting_views.xml",
         "views/hr_late_early_criterion_views.xml",
         "views/hr_overtime_views.xml",
+        "views/hr_overtime_config_settings_views.xml",
         "views/hr_labor_health_insurance_views.xml",
         "views/hr_income_tax_pivot_views.xml",
         "views/hr_annual_leave_views.xml",

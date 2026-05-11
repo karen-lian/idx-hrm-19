@@ -3,9 +3,9 @@ from odoo.exceptions import UserError, ValidationError
 
 OVERTIME_DAY_TYPE = [
     ("weekday", "平日加班"),
-    ("rest_day", "休假日加班"),
-    ("mandatory_rest", "例假日加班"),
-    ("public_holiday", "國定假日加班"),
+    ("day_off", "休假日加班"),
+    ("regular_holiday", "例假日加班"),
+    ("regular_holiday_national_holiday", "國定假日加班"),
 ]
 
 COMPENSATION_TYPE = [
@@ -56,7 +56,7 @@ class HrOvertime(models.Model):
         selection=COMPENSATION_TYPE, string="申請類型", required=True, default="cash", tracking=True,
     )
     overtime_type_id = fields.Many2one(
-        "hr.overtime.config.type", string="加班時段", ondelete="restrict",
+        "hr.overtime.type", string="加班時段", ondelete="restrict",
     )
     leave_validity_start = fields.Date(
         string="補休分配起始日",

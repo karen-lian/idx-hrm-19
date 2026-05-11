@@ -204,3 +204,55 @@ class ResConfigSettings(models.TransientModel):
                 raise ValidationError("勞保最低投保薪資不得為負數")
             if rec.health_min_salary < 0:
                 raise ValidationError("健保最低投保薪資不得為負數")
+
+    # --- 加班參數 ---
+    overtime_taxfree_time = fields.Integer(
+        string="加班免稅額時數",
+        default=46,
+        config_parameter="idx_hrm.overtime_taxfree_time",
+    )
+    workday_limit_hours = fields.Integer(
+        string="工作日加班上限時數",
+        default=4,
+        config_parameter="idx_hrm.workday_limit_hours",
+    )
+    overtime_hour_month = fields.Integer(
+        string="單月加班上限時數",
+        default=46,
+        config_parameter="idx_hrm.overtime_hour_month",
+    )
+    holiday_limit_hour = fields.Integer(
+        string="非工作日加班上限時數",
+        default=12,
+        config_parameter="idx_hrm.holiday_limit_hour",
+    )
+    overtime_hour_three_month = fields.Integer(
+        string="三個月內加班上限時數",
+        default=138,
+        config_parameter="idx_hrm.overtime_hour_three_month",
+    )
+    overtime_regulation = fields.Selection(
+        selection=[
+            ("show", "僅提示訊息"),
+            ("control", "提示訊息且不能申請"),
+        ],
+        string="加班申請超過參數設定管理辦法",
+        default="control",
+        config_parameter="idx_hrm.overtime_regulation",
+    )
+    overtime_type = fields.Selection(
+        selection=[
+            ("leave", "補休"),
+            ("cash", "現金"),
+        ],
+        string="加班申請預設類型",
+        default="leave",
+        config_parameter="idx_hrm.overtime_type",
+    )
+
+    @api.constrains("overtime_hour_month", "overtime_hour_three_month")
+    def _check_overtime_month_limit(self):
+        for rec in self:
+            if rec.overtime_hour_month > 0 and rec.overtime_hour_three_month > 0:
+                if rec.overtime_hour_month > rec.overtime_hour_three_month:
+                    raise ValidationError("單月加班上限時數不可大於三個月內加班上限時數")

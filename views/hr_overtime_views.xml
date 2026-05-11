@@ -1,24 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="hr_overtime_config_view_form" model="ir.ui.view">
-        <field name="name">hr.overtime.config.view.form</field>
-        <field name="model">hr.overtime.config</field>
+    <!-- ============================================================
+         hr.overtime.type — List View
+    ============================================================ -->
+    <record id="hr_overtime_type_view_list" model="ir.ui.view">
+        <field name="name">hr.overtime.type.view.list</field>
+        <field name="model">hr.overtime.type</field>
         <field name="arch" type="xml">
-            <form string="加班設定">
+            <list string="加班時段">
+                <field name="name"/>
+                <field name="type"/>
+                <field name="overtime_type_date_rule"/>
+                <field name="request_unit"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         hr.overtime.type — Form View
+    ============================================================ -->
+    <record id="hr_overtime_type_view_form" model="ir.ui.view">
+        <field name="name">hr.overtime.type.view.form</field>
+        <field name="model">hr.overtime.type</field>
+        <field name="arch" type="xml">
+            <form string="加班時段">
                 <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="加班時段名稱"/>
+                        </h1>
+                    </div>
                     <group>
-                        <field name="name"/>
-                        <field name="monthly_limit_hours"/>
-                        <field name="daily_limit_hours"/>
+                        <group>
+                            <field name="type"/>
+                            <field name="overtime_type_date_rule"/>
+                            <field name="request_unit"/>
+                            <field name="minimum_overtime"
+                                   invisible="type == 'leave'"/>
+                        </group>
+                        <group>
+                            <field name="leave_type_id"
+                                   invisible="type != 'leave'"
+                                   options="{'no_create': True}"/>
+                        </group>
                     </group>
-                    <notebook>
-                        <page string="加班時段費率表">
-                            <field name="overtime_type_ids">
-                                <list editable="bottom">
+                    <notebook invisible="type != 'cash'">
+                        <page string="加班費規則" name="cash_rules">
+                            <field name="rule_line_ids">
+                                <list editable="bottom" string="費率規則">
                                     <field name="name"/>
-                                    <field name="day_type"/>
-                                    <field name="compensation_type"/>
-                                    <field name="leave_conversion_ratio"/>
+                                    <field name="from_hrs"/>
+                                    <field name="to_hrs"/>
+                                    <field name="hrs_amount"/>
+                                    <field name="no_taxable"/>
+                                </list>
+                            </field>
+                            <separator string="休息時間"/>
+                            <field name="leave_line_ids">
+                                <list editable="bottom" string="休息時間">
+                                    <field name="name"/>
+                                    <field name="hour_from" widget="float_time"/>
+                                    <field name="hour_to" widget="float_time"/>
+                                    <field name="hrs" readonly="1"/>
                                 </list>
                             </field>
                         </page>
@@ -28,28 +71,12 @@
         </field>
     </record>
 
-    <record id="hr_overtime_config_type_view_list" model="ir.ui.view">
-        <field name="name">hr.overtime.config.type.view.list</field>
-        <field name="model">hr.overtime.config.type</field>
-        <field name="arch" type="xml">
-            <list string="加班時段" editable="bottom">
-                <field name="name"/>
-                <field name="day_type"/>
-                <field name="compensation_type"/>
-                <field name="leave_conversion_ratio"/>
-            </list>
-        </field>
-    </record>
-
-    <record id="action_hr_overtime_config" model="ir.actions.act_window">
-        <field name="name">加班設定</field>
-        <field name="res_model">hr.overtime.config</field>
-        <field name="view_mode">form</field>
-    </record>
-
+    <!-- ============================================================
+         Action：加班時段
+    ============================================================ -->
     <record id="action_hr_overtime_config_type" model="ir.actions.act_window">
         <field name="name">加班時段</field>
-        <field name="res_model">hr.overtime.config.type</field>
+        <field name="res_model">hr.overtime.type</field>
         <field name="view_mode">list,form</field>
     </record>
 </odoo>
