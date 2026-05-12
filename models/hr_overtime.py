@@ -3,7 +3,7 @@ from odoo.exceptions import ValidationError
 
 OVERTIME_DAY_TYPE = [
     ("weekday", "平日加班"),
-    ("day_off", "休假日加班"),
+    ("day_off", "休息日加班"),
     ("regular_holiday", "例假日加班"),
     ("regular_holiday_national_holiday", "國定假日加班"),
 ]
@@ -20,7 +20,7 @@ class HrOvertimeType(models.Model):
 
     name = fields.Char(string="加班時段", required=True)
     type = fields.Selection(
-        selection=[("cash", "加班"), ("leave", "補休")],
+        selection=[("cash", "加班費"), ("leave", "補休")],
         string="加班類型",
         required=True,
     )

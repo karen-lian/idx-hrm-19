@@ -33,7 +33,8 @@
                     <group>
                         <group>
                             <field name="type"/>
-                            <field name="overtime_type_date_rule"/>
+                            <field name="overtime_type_date_rule"
+                                   invisible="type == 'leave'"/>
                             <field name="request_unit"/>
                             <field name="minimum_overtime"
                                    invisible="type == 'leave'"/>

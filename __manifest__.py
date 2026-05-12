@@ -19,6 +19,7 @@
         "data/ir_cron.xml",
         "data/hr_overtime_sequence.xml",
         "data/hr_leave_type_data.xml",
+        "data/hr_overtime_type_data.xml",
         "data/hr_payroll_data.xml",
         "views/res_config_settings_views.xml",
         "views/hr_attendance_setting_views.xml",
