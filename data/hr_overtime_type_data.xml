@@ -72,5 +72,14 @@
             ]"/>
         </record>
 
+        <!-- 換休（補休） -->
+        <record id="overtime_type_leave" model="hr.overtime.type">
+            <field name="name">換休</field>
+            <field name="type">leave</field>
+            <field name="request_unit">half_an_hour</field>
+            <field name="minimum_overtime">False</field>
+            <field name="leave_type_id" ref="idx_hrm_19.leave_type_overtime"/>
+        </record>
+
     </data>
 </odoo>
