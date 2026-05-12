@@ -69,7 +69,7 @@ class HrOvertime(models.Model):
         related="employee_id.job_id", string="職稱", store=True,
     )
     manager_id = fields.Many2one(
-        related="employee_id.parent_id", string="管理人", store=True,
+        related="employee_id.overtime_manager_id", string="加班審核主管", store=True,
     )
 
     # ── 加班時段（支援跨日） ────────────────────────────────────
@@ -127,6 +127,43 @@ class HrOvertime(models.Model):
         ),
     ]
 
+    def copy(self, default=None):
+        raise UserError("加班申請不允許複製。")
+
+    def unlink(self):
+        for rec in self:
+            if rec.state != "draft":
+                raise UserError(
+                    f"加班申請（{rec.name}）非草稿狀態，不允許刪除。"
+                )
+        return super().unlink()
+
+    # ── Default 自動帶入起始時段 ─────────────────────────────────
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        # 取今天的星期（0=Mon…6=Sun）
+        today = fields.Date.today()
+        weekday = today.weekday()  # 0=Mon, 6=Sun
+        # 找員工的工作日曆
+        employee = self.env.user.employee_id
+        calendar = (
+            employee.resource_calendar_id
+            or (employee.company_id and employee.company_id.resource_calendar_id)
+        )
+        if calendar:
+            # 找今天星期對應的排班，取 hour_to 最大值（即最晚的下班時間）
+            work_lines = calendar.attendance_ids.filtered(
+                lambda a: int(a.dayofweek) == weekday
+                and a.day_period != "lunch"
+            )
+            if work_lines:
+                max_hour_to = max(work_lines.mapped("hour_to"))
+                res["request_hour_from"] = max_hour_to
+                res["request_hour_to"] = min(max_hour_to + 1.0, 24.0)
+        return res
+
     # ── Compute ─────────────────────────────────────────────────
 
     @api.depends("is_cross_day", "request_date")
@@ -173,6 +210,64 @@ class HrOvertime(models.Model):
             self.request_date_to = self.request_date + timedelta(days=1)
         else:
             self.request_date_to = self.request_date
+
+    @api.onchange("request_date", "type")
+    def _onchange_auto_overtime_type(self):
+        """依據 request_date 與 type 自動帶入加班時段（overtime_type_id）。
+
+        規則：
+        - type='leave'：直接取 hr.overtime.type 中 type='leave' 的第一筆。
+        - type='cash'：先查 resource.calendar.leaves 有無符合 request_date 的假別，
+          若有，以其 leave_type 去比對 hr.overtime.type.overtime_type_date_rule，
+          取 type='cash' 的第一筆；若查無假期資料則清空欄位。
+        """
+        if not self.request_date and self.type != "leave":
+            return
+
+        OvertimeType = self.env["hr.overtime.type"]
+
+        if self.type == "leave":
+            ot_type = OvertimeType.search([("type", "=", "leave")], limit=1)
+            self.overtime_type_id = ot_type or False
+            return
+
+        # type == 'cash'：查 request_date 對應的 resource.calendar.leaves
+        if not self.request_date:
+            return
+
+        date_from_dt = fields.Datetime.from_string(
+            f"{self.request_date} 00:00:00"
+        )
+        date_to_dt = fields.Datetime.from_string(
+            f"{self.request_date} 23:59:59"
+        )
+        calendar_leave = self.env["resource.calendar.leaves"].search(
+            [
+                ("leave_type", "!=", False),
+                ("date_from", "<=", date_to_dt),
+                ("date_to", ">=", date_from_dt),
+            ],
+            limit=1,
+        )
+        if calendar_leave and calendar_leave.leave_type:
+            # 依假日類型找對應的加班時段
+            ot_type = OvertimeType.search(
+                [
+                    ("overtime_type_date_rule", "=", calendar_leave.leave_type),
+                    ("type", "=", "cash"),
+                ],
+                limit=1,
+            )
+        else:
+            # 查無假日記錄 → 視為平日，帶入「平日加班」類型
+            ot_type = OvertimeType.search(
+                [
+                    ("overtime_type_date_rule", "=", "weekday"),
+                    ("type", "=", "cash"),
+                ],
+                limit=1,
+            )
+        self.overtime_type_id = ot_type or False
 
     # ── Constrains ──────────────────────────────────────────────
 
@@ -226,15 +321,13 @@ class HrOvertime(models.Model):
         """4.1：加班時段不得落在公司表定上班時間內。"""
         self.ensure_one()
         employee = self.employee_id
-        contract = self.env["hr.contract"].search(
-            [("employee_id", "=", employee.id),
-             ("state", "in", ["open", "pending"])],
-            limit=1,
+        # 優先取員工自訂工作日曆，若無則取公司預設日曆
+        calendar = (
+            employee.resource_calendar_id
+            or employee.company_id.resource_calendar_id
         )
-        if not contract or not contract.resource_calendar_id:
-            return  # 無合約或無排班，略過
-
-        calendar = contract.resource_calendar_id
+        if not calendar:
+            return  # 無排班設定，略過
         date_from = self.request_date
         date_to = self.request_date_to or date_from
         dt_ot_from = datetime.combine(date_from, datetime.min.time()) + timedelta(hours=self.request_hour_from)
@@ -291,6 +384,8 @@ class HrOvertime(models.Model):
         for rec in self:
             if rec.state != "draft":
                 raise UserError("只有草稿狀態可以提交")
+            if not rec.hours or rec.hours <= 0:
+                raise UserError("加班時間未達申請加班的基準!")
             rec._check_work_schedule_overlap()
             rec._check_duplicate_overlap()
             rec.write({"state": "pending"})
@@ -314,6 +409,11 @@ class HrOvertime(models.Model):
             rec.write({"state": "approved"})
             if rec.type == "leave":
                 rec._create_leave_allocation()
+            # 自動標記「待審批」活動為完成
+            rec.activity_feedback(
+                ["mail.mail_activity_data_todo"],
+                feedback="加班申請已核准。",
+            )
             rec.message_post(
                 body=f"加班申請已核准（{rec.hours:.1f} 小時）。",
                 partner_ids=rec.employee_id.user_id.partner_id.ids,
@@ -324,6 +424,11 @@ class HrOvertime(models.Model):
             if rec.state != "pending":
                 raise UserError("只有待批准狀態可以拒絕")
             rec.write({"state": "rejected", "return_reason": reason})
+            # 自動標記「待審批」活動為完成
+            rec.activity_feedback(
+                ["mail.mail_activity_data_todo"],
+                feedback=f"加班申請已拒絕。{('原因：' + reason) if reason else ''}",
+            )
             body = "加班申請已被拒絕。"
             if reason:
                 body += f"<br/>原因：{reason}"
@@ -333,7 +438,7 @@ class HrOvertime(models.Model):
             )
 
     def action_return(self):
-        """員工或管理員將已批准單據退回（state → pending）。"""
+        """將已批准單據退回草稿（state → draft），取消補休分配。"""
         for rec in self:
             if rec.state != "approved":
                 raise UserError("只有已批准狀態可以退回")
@@ -345,7 +450,7 @@ class HrOvertime(models.Model):
                 alloc.action_draft()
                 alloc.unlink()
                 rec.write({"leave_allocation_id": False})
-            rec.write({"state": "pending"})
+            rec.write({"state": "draft"})
 
     def _create_leave_allocation(self):
         self.ensure_one()

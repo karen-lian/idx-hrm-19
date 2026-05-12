@@ -48,17 +48,6 @@
                     </group>
 
                     <group string="申請時段">
-                        <!-- 開始 -->
-                        <label for="request_date" string="加班日期"/>
-                        <div>
-                            <field name="request_date" class="oe_inline"
-                                   readonly="state != 'draft'"/>
-                            <span class="oe_inline mx-1">從</span>
-                            <field name="request_hour_from" widget="float_time"
-                                   class="oe_inline"
-                                   readonly="state != 'draft'"/>
-                        </div>
-
                         <!-- 跨日旗標 -->
                         <label for="is_cross_day" string="跨日"/>
                         <div>
@@ -66,16 +55,37 @@
                                    readonly="state != 'draft'"/>
                         </div>
 
-                        <!-- 結束（跨日時顯示結束日期） -->
-                        <label for="request_hour_to" string="結束時間"/>
-                        <div>
-                            <field name="request_date_to" class="oe_inline"
-                                   invisible="not is_cross_day"
-                                   readonly="1"/>
-                            <span class="oe_inline mx-1"
-                                  invisible="not is_cross_day">到</span>
+                        <!-- 加班日期（非跨日）：[date] 從 [hour_from] 到 [hour_to] -->
+                        <label for="request_date" string="加班日期"
+                               invisible="is_cross_day"/>
+                        <div invisible="is_cross_day">
+                            <field name="request_date" class="oe_inline"
+                                   readonly="state != 'draft'"/>
+                            <span class="oe_inline mx-1">從</span>
+                            <field name="request_hour_from" widget="float_time"
+                                   class="oe_inline"
+                                   readonly="state != 'draft'"/>
+                            <span class="oe_inline mx-1">到</span>
                             <field name="request_hour_to" widget="float_time"
                                    class="oe_inline"
+                                   readonly="state != 'draft'"/>
+                        </div>
+
+                        <!-- 加班日期（跨日）：從 [date] [hour_from] 到 [date_to] [hour_to] -->
+                        <label for="request_date" string="加班日期"
+                               invisible="not is_cross_day"/>
+                        <div invisible="not is_cross_day">
+                            <span class="oe_inline me-1">從</span>
+                            <field name="request_date" class="oe_inline"
+                                   readonly="state != 'draft'"/>
+                            <field name="request_hour_from" widget="float_time"
+                                   class="oe_inline ms-1"
+                                   readonly="state != 'draft'"/>
+                            <span class="oe_inline mx-1">到</span>
+                            <field name="request_date_to" class="oe_inline"
+                                   readonly="1"/>
+                            <field name="request_hour_to" widget="float_time"
+                                   class="oe_inline ms-1"
                                    readonly="state != 'draft'"/>
                         </div>
 
@@ -168,6 +178,6 @@
         <field name="res_model">hr.overtime</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="idx_hrm_19.view_hr_overtime_search"/>
-        <field name="context">{'search_default_my_overtime': 1}</field>
+        <field name="context">{'search_default_my_overtime': 1, 'search_default_pending': 1}</field>
     </record>
 </odoo>
