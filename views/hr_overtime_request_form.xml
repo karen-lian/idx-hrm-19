@@ -34,34 +34,58 @@
                             <field name="leave_allocation_id" readonly="1"
                                    invisible="not leave_allocation_id"/>
                             <field name="type" readonly="state != 'draft'"/>
-                            <field name="leave_validity_start"
-                                   readonly="1"
-                                   invisible="type != 'leave'"/>
                             <field name="overtime_type_id"
                                    options="{'no_create': True}"
                                    readonly="state != 'draft'"/>
+                            <field name="leave_validity_start"
+                                   readonly="1"
+                                   invisible="type != 'leave'"/>
                             <field name="attachment" widget="binary"
                                    filename="attachment_name"
                                    readonly="state != 'draft'"/>
                             <field name="attachment_name" invisible="1"/>
                         </group>
                     </group>
-                    <group string="申請日期">
-                        <label for="request_date"/>
+
+                    <group string="申請時段">
+                        <!-- 開始 -->
+                        <label for="request_date" string="加班日期"/>
                         <div>
                             <field name="request_date" class="oe_inline"
                                    readonly="state != 'draft'"/>
-                            <span class="oe_inline"> 從 </span>
+                            <span class="oe_inline mx-1">從</span>
                             <field name="request_hour_from" widget="float_time"
                                    class="oe_inline"
                                    readonly="state != 'draft'"/>
-                            <span class="oe_inline"> 到 </span>
+                        </div>
+
+                        <!-- 跨日旗標 -->
+                        <label for="is_cross_day" string="跨日"/>
+                        <div>
+                            <field name="is_cross_day" class="oe_inline"
+                                   readonly="state != 'draft'"/>
+                        </div>
+
+                        <!-- 結束（跨日時顯示結束日期） -->
+                        <label for="request_hour_to" string="結束時間"/>
+                        <div>
+                            <field name="request_date_to" class="oe_inline"
+                                   invisible="not is_cross_day"
+                                   readonly="1"/>
+                            <span class="oe_inline mx-1"
+                                  invisible="not is_cross_day">到</span>
                             <field name="request_hour_to" widget="float_time"
                                    class="oe_inline"
                                    readonly="state != 'draft'"/>
                         </div>
-                        <field name="hours" readonly="1"/>
+
+                        <label for="hours" string="總時數"/>
+                        <div>
+                            <field name="hours" readonly="1" class="oe_inline"/>
+                            <span class="oe_inline ms-1">小時</span>
+                        </div>
                     </group>
+
                     <group>
                         <field name="description"
                                placeholder="請說明加班原因..."
@@ -90,8 +114,9 @@
                 <field name="name"/>
                 <field name="employee_id"/>
                 <field name="request_date"/>
-                <field name="request_hour_from" widget="float_time" string="從"/>
-                <field name="request_hour_to" widget="float_time" string="到"/>
+                <field name="request_hour_from" widget="float_time" string="開始時間"/>
+                <field name="is_cross_day" string="跨日"/>
+                <field name="request_hour_to" widget="float_time" string="結束時間"/>
                 <field name="hours"/>
                 <field name="type"/>
                 <field name="overtime_type_id"/>
