@@ -9,7 +9,6 @@
 - 去除已廢棄的 'year' 欄位（Odoo 19 resource.calendar.leaves 無此欄位），
   改以 roc_year（本模組自訂欄位）儲存民國年。
 """
-import json
 import logging
 import pytz
 import requests
