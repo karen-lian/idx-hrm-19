@@ -454,13 +454,13 @@ class HrOvertime(models.Model):
             if rec.state != "approved":
                 raise UserError("只有已批准狀態可以退回")
             if rec.type == "leave" and rec.leave_allocation_id:
-                alloc = rec.leave_allocation_id
+                alloc = rec.leave_allocation_id.sudo()
                 if alloc.leaves_taken > 0:
                     raise UserError("員工已經使用加班補休假，不能退回加班申請!")
-                # Odoo 19：refuse → 直接 write draft 再刪除
+                # Odoo 19 分配單狀態機：validate → refuse（需 sudo 繞過權限檢查）
+                # refuse 後 state=refuse，符合 unlink 條件（confirm/refuse 才可刪）
                 alloc.action_refuse()
-                alloc.write({"state": "draft"})
-                alloc.unlink()
+                alloc.with_context(allocation_skip_state_check=True).unlink()
                 rec.write({"leave_allocation_id": False})
             rec.write({"state": "draft"})
 
@@ -471,7 +471,9 @@ class HrOvertime(models.Model):
         )
         if not leave_type:
             return
-        alloc = self.env["hr.leave.allocation"].create({
+        # Odoo 19：create() 預設 state=confirm，不可帶其他 state
+        # 須 sudo 才能執行 _action_validate()（需 hr officer 權限）
+        alloc = self.env["hr.leave.allocation"].sudo().create({
             "name": f"加班補休分配（{self.name}）",
             "employee_id": self.employee_id.id,
             "holiday_status_id": leave_type.id,
@@ -479,7 +481,6 @@ class HrOvertime(models.Model):
             "allocation_type": "regular",
             "date_from": self.leave_validity_start or self.request_date,
         })
-        # Odoo 19：hr.leave.allocation 無 action_validate()
-        # 直接呼叫內部方法 _action_validate() 完成核准
+        # _action_validate()：直接寫入 state=validate，略過 action_approve 的 can_validate 檢查
         alloc._action_validate()
         self.write({"leave_allocation_id": alloc.id})
