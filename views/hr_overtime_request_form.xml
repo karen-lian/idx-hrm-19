@@ -19,21 +19,11 @@
                 </header>
                 <sheet>
                     <div class="oe_title">
-                        <h1><field name="name" readonly="1"/></h1>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
                     </div>
                     <group>
-                        <group string="加班資訊">
-                            <field name="leave_allocation_id" readonly="1"
-                                   invisible="not leave_allocation_id"/>
-                            <field name="type" readonly="state != 'draft'"/>
-                            <field name="overtime_type_id"
-                                   options="{'no_create': True}"
-                                   readonly="state != 'draft'"/>
-                            <field name="attachment" widget="binary"
-                                   filename="attachment_name"
-                                   readonly="state != 'draft'"/>
-                            <field name="attachment_name" invisible="1"/>
-                        </group>
                         <group string="員工資訊">
                             <field name="employee_id"
                                    options="{'no_create': True}"
@@ -42,65 +32,75 @@
                             <field name="job_id" readonly="1"/>
                             <field name="manager_id" readonly="1"/>
                         </group>
+                        <group string="申請時段">
+                            <label for="is_cross_day" string="是否跨日"/>
+                            <field name="is_cross_day" readonly="state != 'draft'"/>
+
+                            <!-- 加班日期（非跨日）：[date] 從 [hour_from] 到 [hour_to] -->
+                            <label for="request_date" string="加班日期"
+                                   invisible="is_cross_day"/>
+                            <div invisible="is_cross_day">
+                                <field name="request_date" class="oe_inline"
+                                       readonly="state != 'draft'"/>
+                                <span class="oe_inline mx-1">從</span>
+                                <field name="request_hour_from" widget="float_time"
+                                       class="oe_inline"
+                                       readonly="state != 'draft'"/>
+                                <span class="oe_inline mx-1">到</span>
+                                <field name="request_hour_to" widget="float_time"
+                                       class="oe_inline"
+                                       readonly="state != 'draft'"/>
+                            </div>
+
+
+                            <!-- 加班日期（跨日）：從 [date] [hour_from] 到 [date_to] [hour_to] -->
+                            <label for="request_date" string="加班日期"
+                                   invisible="not is_cross_day"/>
+                            <div invisible="not is_cross_day">
+                                <span class="oe_inline me-1">從</span>
+                                <field name="request_date" class="oe_inline"
+                                       readonly="state != 'draft'"/>
+                                <field name="request_hour_from" widget="float_time"
+                                       class="oe_inline ms-1"
+                                       readonly="state != 'draft'"/>
+                                <span class="oe_inline mx-1">到</span>
+                                <field name="request_date_to" class="oe_inline"
+                                       readonly="1"/>
+                                <field name="request_hour_to" widget="float_time"
+                                       class="oe_inline ms-1"
+                                       readonly="state != 'draft'"/>
+                            </div>
+
+                            <label for="hours" string="總時數"/>
+                            <div>
+                                <field name="hours" readonly="1" class="oe_inline"/>
+                                <span class="oe_inline ms-1">小時</span>
+                            </div>
+                            <group>
+                                <field name="description"
+                                       placeholder="請說明加班原因..."
+                                       readonly="state != 'draft'"/>
+                            </group>
+                            <group invisible="state != 'rejected'">
+                                <field name="return_reason" readonly="1"/>
+                            </group>
+                        </group>
+
+
                     </group>
-
-                    <group string="申請時段">
-                        <!-- 跨日旗標 -->
-                        <label for="is_cross_day" string="跨日"/>
-                        <div>
-                            <field name="is_cross_day" class="oe_inline"
-                                   readonly="state != 'draft'"/>
-                        </div>
-
-                        <!-- 加班日期（非跨日）：[date] 從 [hour_from] 到 [hour_to] -->
-                        <label for="request_date" string="加班日期"
-                               invisible="is_cross_day"/>
-                        <div invisible="is_cross_day">
-                            <field name="request_date" class="oe_inline"
-                                   readonly="state != 'draft'"/>
-                            <span class="oe_inline mx-1">從</span>
-                            <field name="request_hour_from" widget="float_time"
-                                   class="oe_inline"
-                                   readonly="state != 'draft'"/>
-                            <span class="oe_inline mx-1">到</span>
-                            <field name="request_hour_to" widget="float_time"
-                                   class="oe_inline"
-                                   readonly="state != 'draft'"/>
-                        </div>
-
-                        <!-- 加班日期（跨日）：從 [date] [hour_from] 到 [date_to] [hour_to] -->
-                        <label for="request_date" string="加班日期"
-                               invisible="not is_cross_day"/>
-                        <div invisible="not is_cross_day">
-                            <span class="oe_inline me-1">從</span>
-                            <field name="request_date" class="oe_inline"
-                                   readonly="state != 'draft'"/>
-                            <field name="request_hour_from" widget="float_time"
-                                   class="oe_inline ms-1"
-                                   readonly="state != 'draft'"/>
-                            <span class="oe_inline mx-1">到</span>
-                            <field name="request_date_to" class="oe_inline"
-                                   readonly="1"/>
-                            <field name="request_hour_to" widget="float_time"
-                                   class="oe_inline ms-1"
-                                   readonly="state != 'draft'"/>
-                        </div>
-
-                        <label for="hours" string="總時數"/>
-                        <div>
-                            <field name="hours" readonly="1" class="oe_inline"/>
-                            <span class="oe_inline ms-1">小時</span>
-                        </div>
-                    </group>
-
-                    <group>
-                        <field name="description"
-                               placeholder="請說明加班原因..."
+                    <group string="加班資訊">
+                        <field name="leave_allocation_id" readonly="1"
+                               invisible="not leave_allocation_id"/>
+                        <field name="type" readonly="state != 'draft'"/>
+                        <field name="overtime_type_id"
+                               options="{'no_create': True}"
                                readonly="state != 'draft'"/>
+                        <field name="attachment" widget="binary"
+                               filename="attachment_name"
+                               readonly="state != 'draft'"/>
+                        <field name="attachment_name" invisible="1"/>
                     </group>
-                    <group invisible="state != 'rejected'">
-                        <field name="return_reason" readonly="1"/>
-                    </group>
+
                 </sheet>
                 <chatter/>
             </form>

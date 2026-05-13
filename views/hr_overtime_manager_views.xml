@@ -47,8 +47,8 @@
                         class="btn-danger"
                         invisible="state != 'pending'"/>
             </xpath>
-            <!-- 在「加班資訊」group 的 overtime_type_id 後加入補休分配起始日（僅管理人視角可見且可寫） -->
-            <xpath expr="//group[@string='加班資訊']/field[@name='overtime_type_id']" position="after">
+            <!-- 在 overtime_type_id 後加入補休分配起始日（僅管理人視角可見且可寫） -->
+            <xpath expr="//field[@name='overtime_type_id']" position="after">
                 <field name="leave_validity_start"
                        invisible="type != 'leave'"
                        required="type == 'leave'"
