@@ -457,8 +457,9 @@ class HrOvertime(models.Model):
                 alloc = rec.leave_allocation_id
                 if alloc.leaves_taken > 0:
                     raise UserError("員工已經使用加班補休假，不能退回加班申請!")
+                # Odoo 19：refuse → 直接 write draft 再刪除
                 alloc.action_refuse()
-                alloc.action_draft()
+                alloc.write({"state": "draft"})
                 alloc.unlink()
                 rec.write({"leave_allocation_id": False})
             rec.write({"state": "draft"})
@@ -478,5 +479,7 @@ class HrOvertime(models.Model):
             "allocation_type": "regular",
             "date_from": self.leave_validity_start or self.request_date,
         })
-        alloc.action_validate()
+        # Odoo 19：hr.leave.allocation 無 action_validate()
+        # 直接呼叫內部方法 _action_validate() 完成核准
+        alloc._action_validate()
         self.write({"leave_allocation_id": alloc.id})
