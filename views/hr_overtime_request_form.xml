@@ -22,14 +22,6 @@
                         <h1><field name="name" readonly="1"/></h1>
                     </div>
                     <group>
-                        <group string="員工資訊">
-                            <field name="employee_id"
-                                   options="{'no_create': True}"
-                                   readonly="state != 'draft'"/>
-                            <field name="department_id" readonly="1"/>
-                            <field name="job_id" readonly="1"/>
-                            <field name="manager_id" readonly="1"/>
-                        </group>
                         <group string="加班資訊">
                             <field name="leave_allocation_id" readonly="1"
                                    invisible="not leave_allocation_id"/>
@@ -37,13 +29,18 @@
                             <field name="overtime_type_id"
                                    options="{'no_create': True}"
                                    readonly="state != 'draft'"/>
-                            <field name="leave_validity_start"
-                                   readonly="1"
-                                   invisible="type != 'leave'"/>
                             <field name="attachment" widget="binary"
                                    filename="attachment_name"
                                    readonly="state != 'draft'"/>
                             <field name="attachment_name" invisible="1"/>
+                        </group>
+                        <group string="員工資訊">
+                            <field name="employee_id"
+                                   options="{'no_create': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="department_id" readonly="1"/>
+                            <field name="job_id" readonly="1"/>
+                            <field name="manager_id" readonly="1"/>
                         </group>
                     </group>
 

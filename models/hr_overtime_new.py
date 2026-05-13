@@ -105,7 +105,8 @@ class HrOvertime(models.Model):
     )
     leave_validity_start = fields.Date(
         string="補休分配起始日",
-        help="申請類型為補休時，假期配額的生效起始日",
+        compute="_compute_leave_validity_start", store=True, readonly=False,
+        help="申請類型為補休時，假期配額的生效起始日，預設為加班起始日+1天",
     )
     leave_allocation_id = fields.Many2one(
         "hr.leave.allocation", string="休假分配", readonly=True, copy=False,
@@ -201,6 +202,16 @@ class HrOvertime(models.Model):
             # 依 overtime_type_id.request_unit 取捨至最小單位
             unit = rec.overtime_type_id.request_unit if rec.overtime_type_id else "half_an_hour"
             rec.hours = _round_to_unit(raw_hours, unit)
+
+    # ── Compute ─────────────────────────────────────────────────（補休分配起始日）
+
+    @api.depends("request_date", "type")
+    def _compute_leave_validity_start(self):
+        for rec in self:
+            if rec.type == "leave" and rec.request_date:
+                rec.leave_validity_start = rec.request_date + timedelta(days=1)
+            else:
+                rec.leave_validity_start = False
 
     # ── onchange ────────────────────────────────────────────────
 
@@ -303,7 +314,7 @@ class HrOvertime(models.Model):
     @api.constrains("type", "leave_validity_start")
     def _check_leave_validity_start(self):
         for rec in self:
-            if rec.type == "leave" and rec.state == "approved" and not rec.leave_validity_start:
+            if rec.type == "leave" and rec.state in ("pending", "approved") and not rec.leave_validity_start:
                 raise ValidationError("申請類型為補休時，必須填寫補休分配起始日")
 
     # ── 儲存時產生單號 ───────────────────────────────────────────
@@ -442,10 +453,10 @@ class HrOvertime(models.Model):
         for rec in self:
             if rec.state != "approved":
                 raise UserError("只有已批准狀態可以退回")
-            if rec.leave_allocation_id:
+            if rec.type == "leave" and rec.leave_allocation_id:
                 alloc = rec.leave_allocation_id
                 if alloc.leaves_taken > 0:
-                    raise UserError("該張加班補休分配單已使用，不能退回加班單")
+                    raise UserError("員工已經使用加班補休假，不能退回加班申請!")
                 alloc.action_refuse()
                 alloc.action_draft()
                 alloc.unlink()
@@ -464,7 +475,7 @@ class HrOvertime(models.Model):
             "employee_id": self.employee_id.id,
             "holiday_status_id": leave_type.id,
             "number_of_days": round(self.hours / 8, 4),
-            "allocation_type": "fixed",
+            "allocation_type": "regular",
             "date_from": self.leave_validity_start or self.request_date,
         })
         alloc.action_validate()
