@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         resource.calendar.leaves list view 繼承
+         在結束日期後新增「加班日期類型(leave_type)」欄位，可直接編輯
+    ============================================================ -->
+    <record id="resource_calendar_leaves_list_ext" model="ir.ui.view">
+        <field name="name">resource.calendar.leaves.list.ext</field>
+        <field name="model">resource.calendar.leaves</field>
+        <field name="inherit_id" ref="hr_holidays.resource_calendar_leaves_tree_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date_to']" position="after">
+                <field name="leave_type" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         resource.calendar (工作時間表) form view 繼承
+         在 notebook 內最後新增「公眾假日」page，
+         只顯示與同一工作時間表 (calendar_id) 關聯的假日
+    ============================================================ -->
+    <record id="resource_calendar_form_ext" model="ir.ui.view">
+        <field name="name">resource.calendar.form.ext</field>
+        <field name="model">resource.calendar</field>
+        <field name="inherit_id" ref="resource.resource_calendar_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="公眾假日" name="public_holidays">
+                    <field name="global_leave_ids">
+                        <list editable="bottom" string="公眾假日">
+                            <field name="name" string="名稱" required="1"
+                                   placeholder="例：元旦"/>
+                            <field name="date_from" string="開始日期" required="1"/>
+                            <field name="date_to" string="結束日期" required="1"/>
+                            <field name="leave_type" string="假日類型"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

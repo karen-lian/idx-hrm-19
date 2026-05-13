@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         國定假日匯入 Wizard form view
+    ============================================================ -->
+    <record id="view_hr_public_holiday_wizard_form" model="ir.ui.view">
+        <field name="name">hr.public.holiday.wizard.form</field>
+        <field name="model">hr.public.holiday.wizard</field>
+        <field name="arch" type="xml">
+            <form string="匯入國定假日">
+                <group string="匯入設定">
+                    <field name="calendar_id" readonly="1"/>
+                    <field name="specify_year"/>
+                </group>
+                <group string="假日類型判斷">
+                    <field name="day_off"/>
+                    <field name="regular_holiday"/>
+                </group>
+                <footer>
+                    <button name="action_import" string="確認匯入" type="object"
+                            class="btn-primary"/>
+                    <button string="取消" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Wizard action
+    ============================================================ -->
+    <record id="action_hr_public_holiday_wizard" model="ir.actions.act_window">
+        <field name="name">匯入國定假日</field>
+        <field name="res_model">hr.public.holiday.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'active_id': active_id, 'active_model': 'resource.calendar'}</field>
+    </record>
+
+    <!-- ============================================================
+         resource.calendar form view 繼承：加入「匯入國定假日」按鈕
+         （放在既有「公眾假日」page 的頂部，或加在 header button bar）
+    ============================================================ -->
+    <record id="resource_calendar_form_import_btn" model="ir.ui.view">
+        <field name="name">resource.calendar.form.import.btn</field>
+        <field name="model">resource.calendar</field>
+        <field name="inherit_id" ref="idx_hrm_19.resource_calendar_form_ext"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='public_holidays']/field[@name='global_leave_ids']"
+                   position="before">
+                <div class="mb-2">
+                    <button name="%(idx_hrm_19.action_hr_public_holiday_wizard)d"
+                            string="匯入國定假日"
+                            type="action"
+                            class="btn-primary"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

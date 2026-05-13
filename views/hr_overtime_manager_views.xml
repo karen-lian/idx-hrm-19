@@ -61,42 +61,63 @@
         <field name="name">hr.overtime.kanban</field>
         <field name="model">hr.overtime</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="state" sample="1">
+            <kanban sample="1">
                 <field name="name"/>
                 <field name="employee_id"/>
                 <field name="request_date"/>
-                <field name="hours"/>
+                <field name="request_date_to"/>
+                <field name="request_hour_from"/>
+                <field name="request_hour_to"/>
+                <field name="is_cross_day"/>
                 <field name="type"/>
+                <field name="overtime_type_id"/>
                 <field name="state"/>
                 <templates>
                     <t t-name="card">
-                        <div class="oe_kanban_card oe_kanban_global_click">
-                            <div class="o_kanban_record_top">
-                                <div class="o_kanban_record_headings">
-                                    <strong class="o_kanban_record_title">
-                                        <field name="name"/>
-                                    </strong>
+                        <!-- 頂部：左邊資訊 ＋ 右上按鈕（一行） -->
+                        <div class="d-flex justify-content-between align-items-start">
+                            <!-- 左：員工、單號、起訖一行 -->
+                            <div class="overflow-hidden">
+                                <strong><field name="employee_id"/></strong><br/>
+                                <span class="text-muted small"><field name="name"/></span><br/>
+                                <div class="small text-nowrap" t-if="!record.is_cross_day.raw_value">
+                                    <field name="request_date" class="d-inline"/>從
+                                    <field name="request_hour_from" widget="float_time" class="d-inline"/>到
+                                    <field name="request_hour_to" widget="float_time" class="d-inline"/>
                                 </div>
-                                <field name="state" widget="badge"
-                                       decoration-info="state == 'pending'"
-                                       decoration-success="state == 'approved'"
-                                       decoration-danger="state == 'rejected'"/>
-                            </div>
-                            <div class="o_kanban_record_body">
-                                <field name="employee_id"/>
-                                <div>
-                                    <span><field name="request_date"/></span>
-                                    <span class="ms-2">
-                                        <field name="hours"/> 小時
-                                    </span>
-                                </div>
-                                <field name="type" widget="badge"/>
-                            </div>
-                            <div class="o_kanban_record_bottom">
-                                <div class="oe_kanban_bottom_right">
-                                    <field name="employee_id" widget="many2one_avatar_user"/>
+                                <div class="small text-nowrap" t-if="record.is_cross_day.raw_value">
+                                    從 <field name="request_date" class="d-inline"/>
+                                    <field name="request_hour_from" widget="float_time" class="d-inline"/>到
+                                    <field name="request_date_to" class="d-inline"/>
+                                    <field name="request_hour_to" widget="float_time" class="d-inline"/>
                                 </div>
                             </div>
+                            <!-- 右上：可執行按鈕一行排列 -->
+                            <div class="d-flex gap-1 flex-shrink-0 ms-1">
+                                <button t-if="record.state.raw_value == 'pending'"
+                                        name="action_approve" type="object"
+                                        class="btn btn-sm btn-success">核准</button>
+                                <button t-if="record.state.raw_value == 'pending'"
+                                        name="%(idx_hrm_19.action_hr_overtime_reject_wizard)d"
+                                        type="action"
+                                        class="btn btn-sm btn-danger">拒絕</button>
+                                <button t-if="record.state.raw_value == 'approved'"
+                                        name="action_return" type="object"
+                                        class="btn btn-sm btn-secondary">退回</button>
+                            </div>
+                        </div>
+                        <!-- 底部：左邊 badge ＋ 右邊狀態 -->
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div class="d-flex gap-1 flex-wrap">
+                                <field name="overtime_type_id" widget="badge"/>
+                                <field name="type" widget="badge"
+                                       decoration-info="type == 'cash'"
+                                       decoration-warning="type == 'leave'"/>
+                            </div>
+                            <field name="state" widget="badge"
+                                   decoration-info="state == 'pending'"
+                                   decoration-success="state == 'approved'"
+                                   decoration-danger="state == 'rejected'"/>
                         </div>
                     </t>
                 </templates>

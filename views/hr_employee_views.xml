@@ -11,6 +11,12 @@
                 <field name="employee_number"/>
             </xpath>
 
+            <!-- 在「流程審批管理人」group 加入加班審核主管 -->
+            <xpath expr="//group[@name='managers']" position="inside">
+                <field name="overtime_manager_id" string="加班審核主管"
+                       widget="many2one_avatar_user"/>
+            </xpath>
+
             <!-- 在 Private Information tab 加入台灣欄位 -->
             <xpath expr="//page[@name='personal_information']" position="inside">
                 <separator string="台灣法規資訊"/>
@@ -24,7 +30,6 @@
                     <group>
                         <field name="job_tenure" readonly="1"/>
                         <field name="substitute_id"/>
-                        <field name="overtime_manager_id"/>
                     </group>
                 </group>
 
