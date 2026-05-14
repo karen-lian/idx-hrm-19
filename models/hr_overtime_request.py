@@ -471,6 +471,14 @@ class HrOvertime(models.Model):
         )
         if not leave_type:
             return
+        date_from = self.leave_validity_start or self.request_date
+        # 讀取設定：補休應於幾日內休畢，預設 180 天
+        limit_day = int(
+            self.env["ir.config_parameter"].sudo().get_param(
+                "idx_hrm.overtime_limit_day", default=180
+            )
+        )
+        date_to = date_from + timedelta(days=limit_day)
         # Odoo 19：create() 預設 state=confirm，不可帶其他 state
         # 須 sudo 才能執行 _action_validate()（需 hr officer 權限）
         alloc = self.env["hr.leave.allocation"].sudo().create({
@@ -479,7 +487,8 @@ class HrOvertime(models.Model):
             "holiday_status_id": leave_type.id,
             "number_of_days": round(self.hours / 8, 4),
             "allocation_type": "regular",
-            "date_from": self.leave_validity_start or self.request_date,
+            "date_from": date_from,
+            "date_to": date_to,
         })
         # _action_validate()：直接寫入 state=validate，略過 action_approve 的 can_validate 檢查
         alloc._action_validate()
