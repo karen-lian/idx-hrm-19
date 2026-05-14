@@ -329,7 +329,15 @@ class HrOvertime(models.Model):
     # ── 提交前商業邏輯驗證 ──────────────────────────────────────
 
     def _check_work_schedule_overlap(self):
-        """4.1：加班時段不得落在公司表定上班時間內。"""
+        """4.1：加班時段不得落在公司表定上班時間內（含彈性打卡容許範圍）。
+
+        彈性上班邏輯：
+          - flexible_attendance_before：員工可提前幾分鐘打卡，
+            代表上班時段實際往前延伸此分鐘數。
+          - 例：表定 08:00~17:00，flexible_attendance_before=30，
+            則上班時段有效起點視為 07:30，
+            故加班最早允許從 17:00 - 30min = 16:30 開始。
+        """
         self.ensure_one()
         employee = self.employee_id
         # 優先取員工自訂工作日曆，若無則取公司預設日曆
@@ -339,26 +347,47 @@ class HrOvertime(models.Model):
         )
         if not calendar:
             return  # 無排班設定，略過
+
         date_from = self.request_date
         date_to = self.request_date_to or date_from
         dt_ot_from = datetime.combine(date_from, datetime.min.time()) + timedelta(hours=self.request_hour_from)
         dt_ot_to = datetime.combine(date_to, datetime.min.time()) + timedelta(hours=self.request_hour_to)
 
-        # 取出該日的 resource.calendar.attendance 時段
+        # 取出該日的 resource.calendar.attendance 時段（排除午休 lunch）
         weekday = date_from.weekday()  # 0=Mon…6=Sun
         work_lines = calendar.attendance_ids.filtered(
             lambda a: int(a.dayofweek) == weekday
+              and (not hasattr(a, 'day_period') or a.day_period != 'lunch')
         )
+        if not work_lines:
+            return  # 當天無排班，略過
+
+        # 彈性打卡容許分鐘數（fully_fixed 才有意義，flexible 排班不做修正）
+        flex_before_min = 0
+        if not calendar.flexible_hours:
+            flex_before_min = calendar.flexible_attendance_before or 0
+
         for line in work_lines:
-            dt_work_from = datetime.combine(date_from, datetime.min.time()) + timedelta(hours=line.hour_from)
+            # 上班時段有效起點往前延伸 flex_before_min 分鐘
+            effective_work_from = (
+                datetime.combine(date_from, datetime.min.time())
+                + timedelta(hours=line.hour_from)
+                - timedelta(minutes=flex_before_min)
+            )
             dt_work_to = datetime.combine(date_from, datetime.min.time()) + timedelta(hours=line.hour_to)
-            # 重疊判斷
-            if dt_ot_from < dt_work_to and dt_ot_to > dt_work_from:
+
+            # 重疊判斷：加班時段與有效上班時段有交集即拒絕
+            if dt_ot_from < dt_work_to and dt_ot_to > effective_work_from:
+                # 計算加班最早允許開始時間（最後一條 work_line 的下班時間 - flex_before）
+                last_work_to = max(work_lines.mapped("hour_to"))
+                earliest_ot_start = last_work_to - flex_before_min / 60.0
                 raise ValidationError(
                     f"加班時段（{_float_to_hhmm(self.request_hour_from)}～"
                     f"{_float_to_hhmm(self.request_hour_to)}）"
                     f"與公司表定上班時間（{_float_to_hhmm(line.hour_from)}～"
-                    f"{_float_to_hhmm(line.hour_to)}）重疊，不能提交加班申請。"
+                    f"{_float_to_hhmm(line.hour_to)}）重疊，不能提交加班申請。\n"
+                    f"（考量彈性上班 {flex_before_min} 分鐘，"
+                    f"加班最早可從 {_float_to_hhmm(earliest_ot_start)} 開始）"
                 )
 
     def _check_duplicate_overlap(self):

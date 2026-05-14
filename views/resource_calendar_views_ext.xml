@@ -25,6 +25,34 @@
         <field name="model">resource.calendar</field>
         <field name="inherit_id" ref="resource.resource_calendar_form"/>
         <field name="arch" type="xml">
+            <!-- 彈性上下班欄位：僅 schedule_type=fully_fixed 時顯示 -->
+            <xpath expr="//group[@name='switch_calendar']" position="after">
+                <group name="flex_attendance_settings"
+                       invisible="flexible_hours"
+                       colspan="2">
+                    <div colspan="2" class="alert alert-warning mb-2" role="alert">
+                        彈性工時請以 30 分鐘為單位進行設定
+                    </div>
+                    <label for="flexible_attendance_before" string="彈性上班時間-往前"/>
+                    <div class="d-flex align-items-center gap-2">
+                        <field name="flexible_attendance_before"
+                               nolabel="1" style="width:6ch;"/>
+                        <span>分鐘</span>
+                    </div>
+                    <label for="flexible_attendance" string="彈性上班時間-往後"/>
+                    <div class="d-flex align-items-center gap-2">
+                        <field name="flexible_attendance"
+                               nolabel="1" style="width:6ch;"/>
+                        <span>分鐘</span>
+                    </div>
+                    <label for="attendance_overtime" string="容許下班晚打卡"/>
+                    <div class="d-flex align-items-center gap-2">
+                        <field name="attendance_overtime"
+                               nolabel="1" style="width:6ch;"/>
+                        <span>分鐘</span>
+                    </div>
+                </group>
+            </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="公眾假日" name="public_holidays">
                     <field name="global_leave_ids">
