@@ -20,13 +20,19 @@
                        invisible="not overtime_ids"
                        widget="many2many_tags"/>
             </xpath>
-            <!-- state=validate 時鎖定有效期間 -->
-            <xpath expr="//div[@name='validity']" position="attributes">
-                <attribute name="readonly">state == 'validate'</attribute>
+            <!-- 有效期間：保留原生 accrual 條件，額外加上 state=validate 一律唯讀 -->
+            <xpath expr="//field[@name='date_from']" position="attributes">
+                <attribute name="readonly">allocation_type == 'accrual' and state != 'confirm' or state == 'validate'</attribute>
             </xpath>
-            <!-- state=validate 時鎖定分配天數/時數 -->
-            <xpath expr="//div[@name='duration_display']" position="attributes">
-                <attribute name="readonly">state == 'validate'</attribute>
+            <xpath expr="//field[@name='date_to']" position="attributes">
+                <attribute name="readonly">allocation_type == 'accrual' and state != 'confirm' or state == 'validate'</attribute>
+            </xpath>
+            <!-- 天數：原生 state!='confirm' and not is_officer，補上 state='validate' 一律唯讀 -->
+            <xpath expr="//field[@name='number_of_days_display']" position="attributes">
+                <attribute name="readonly">state != 'confirm' and not is_officer or state == 'validate'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='number_of_hours_display']" position="attributes">
+                <attribute name="readonly">state != 'confirm' and not is_officer or state == 'validate'</attribute>
             </xpath>
         </field>
     </record>
@@ -45,13 +51,19 @@
                        invisible="not overtime_ids"
                        widget="many2many_tags"/>
             </xpath>
-            <!-- state=validate 時鎖定有效期間 -->
-            <xpath expr="//div[@name='validity']" position="attributes">
-                <attribute name="readonly">state == 'validate'</attribute>
+            <!-- manager view 的 date_from/date_to 原生已移除 invisible，補上 validate 鎖定 -->
+            <xpath expr="//field[@name='date_from']" position="attributes">
+                <attribute name="readonly">allocation_type == 'accrual' or state == 'validate'</attribute>
             </xpath>
-            <!-- state=validate 時鎖定分配天數/時數 -->
-            <xpath expr="//div[@name='duration_display']" position="attributes">
-                <attribute name="readonly">state == 'validate'</attribute>
+            <xpath expr="//field[@name='date_to']" position="attributes">
+                <attribute name="readonly">allocation_type == 'accrual' or state == 'validate'</attribute>
+            </xpath>
+            <!-- 天數：原生 state!='confirm' and not is_officer，補上 state='validate' 一律唯讀 -->
+            <xpath expr="//field[@name='number_of_days_display']" position="attributes">
+                <attribute name="readonly">state != 'confirm' and not is_officer or state == 'validate'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='number_of_hours_display']" position="attributes">
+                <attribute name="readonly">state != 'confirm' and not is_officer or state == 'validate'</attribute>
             </xpath>
         </field>
     </record>
