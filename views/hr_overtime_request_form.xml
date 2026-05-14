@@ -80,21 +80,25 @@
                             </div>
                         </group>
                     </group>
-                    <!-- 第二列：加班資訊（全寬） -->
+                    <!-- 第二列：加班資訊（左右兩欄） -->
                     <group string="加班資訊">
-                        <field name="leave_allocation_id" readonly="1"
-                               invisible="not leave_allocation_id"/>
-                        <field name="type" readonly="state != 'draft'"/>
-                        <field name="overtime_type_id"
-                               options="{'no_create': True}"
-                               readonly="state != 'draft'"/>
-                        <field name="attachment" widget="binary"
-                               filename="attachment_name"
-                               readonly="state != 'draft'"/>
-                        <field name="attachment_name" invisible="1"/>
-                        <field name="description"
-                               placeholder="請說明加班原因..."
-                               readonly="state != 'draft'"/>
+                        <group>
+                            <field name="leave_allocation_id" readonly="1"
+                                   invisible="not leave_allocation_id"/>
+                            <field name="type" readonly="state != 'draft'"/>
+                            <field name="overtime_type_id"
+                                   options="{'no_create': True}"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="attachment" widget="binary"
+                                   filename="attachment_name"
+                                   readonly="state != 'draft'"/>
+                            <field name="attachment_name" invisible="1"/>
+                            <field name="description"
+                                   placeholder="請說明加班原因..."
+                                   readonly="state != 'draft'"/>
+                        </group>
                     </group>
                     <!-- 拒絕原因（僅拒絕狀態顯示） -->
                     <group invisible="state != 'rejected'">
