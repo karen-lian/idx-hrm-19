@@ -1,6 +1,6 @@
 from datetime import timedelta
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 
 class HrLeaveType(models.Model):
@@ -77,6 +77,15 @@ class HrLeaveAllocation(models.Model):
         string="系統自動配發",
         default=False,
         readonly=True,
+    )
+    overtime_ids = fields.Many2many(
+        "hr.overtime",
+        "hr_leave_allocation_overtime_rel",
+        "allocation_id",
+        "overtime_id",
+        string="來源加班單",
+        readonly=True,
+        help="此分配單由哪些加班單自動產生",
     )
     allocation_year = fields.Integer(
         string="配發年度",
@@ -190,6 +199,26 @@ class HrLeaveAllocation(models.Model):
                     "carryover_date": new_date,
                     "furlough_freeze_days": alloc.furlough_freeze_days + furlough_days,
                 })
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """覆寫：skip_activity_update=True 時略過 activity_update（自動核准的加班補休分配）。"""
+        skip = self.env.context.get("skip_activity_update")
+        if not skip:
+            return super().create(vals_list)
+        # 加上 import_file=True 讓原生 create 跳過 activity_update
+        return super().with_context(import_file=True).create(vals_list)
+
+    def action_refuse(self):
+        """覆寫：若分配單來自加班單，禁止直接退回，需從加班單操作。"""
+        for alloc in self:
+            if alloc.overtime_ids:
+                overtime_names = "、".join(alloc.overtime_ids.mapped("name"))
+                raise UserError(
+                    f"此分配單由加班單自動產生（{overtime_names}），"
+                    "請回到加班單執行「退回」操作，不可直接在此退回。"
+                )
+        return super().action_refuse()
 
     @api.model
     def get_remaining_days(self, employee_id, leave_type_id):

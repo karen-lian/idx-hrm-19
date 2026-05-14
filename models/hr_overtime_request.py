@@ -481,7 +481,10 @@ class HrOvertime(models.Model):
         date_to = date_from + timedelta(days=limit_day)
         # Odoo 19：create() 預設 state=confirm，不可帶其他 state
         # 須 sudo 才能執行 _action_validate()（需 hr officer 權限）
-        alloc = self.env["hr.leave.allocation"].sudo().create({
+        # skip_activity_update=True：自動建立的分配單直接核准，不需產生主管待辦活動
+        alloc = self.env["hr.leave.allocation"].sudo().with_context(
+            skip_activity_update=True
+        ).create({
             "name": f"加班補休分配（{self.name}）",
             "employee_id": self.employee_id.id,
             "holiday_status_id": leave_type.id,
@@ -492,4 +495,6 @@ class HrOvertime(models.Model):
         })
         # _action_validate()：直接寫入 state=validate，略過 action_approve 的 can_validate 檢查
         alloc._action_validate()
+        # 寫入來源加班單，供勾稽追蹤
+        alloc.sudo().write({"overtime_ids": [(4, self.id)]})
         self.write({"leave_allocation_id": alloc.id})

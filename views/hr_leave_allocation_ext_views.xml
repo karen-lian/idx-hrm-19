@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         hr.leave.allocation form 擴充
+         - 顯示來源加班單（有資料才顯示）
+         - state=validate 時鎖定日期及時數
+    ============================================================ -->
+
+    <!-- 一般員工視角（hr_leave_allocation_view_form） -->
+    <record id="view_hr_leave_allocation_ext_form" model="ir.ui.view">
+        <field name="name">hr.leave.allocation.ext.form</field>
+        <field name="model">hr.leave.allocation</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form"/>
+        <field name="arch" type="xml">
+            <!-- 來源加班單：加在 notes 欄位之前 -->
+            <xpath expr="//field[@name='notes']" position="before">
+                <field name="overtime_ids"
+                       string="來源加班單"
+                       readonly="1"
+                       invisible="not overtime_ids"
+                       widget="many2many_tags"/>
+            </xpath>
+            <!-- state=validate 時鎖定有效期間 -->
+            <xpath expr="//div[@name='validity']" position="attributes">
+                <attribute name="readonly">state == 'validate'</attribute>
+            </xpath>
+            <!-- state=validate 時鎖定分配天數/時數 -->
+            <xpath expr="//div[@name='duration_display']" position="attributes">
+                <attribute name="readonly">state == 'validate'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- 管理員視角（hr_leave_allocation_view_form_manager） -->
+    <record id="view_hr_leave_allocation_ext_form_manager" model="ir.ui.view">
+        <field name="name">hr.leave.allocation.ext.form.manager</field>
+        <field name="model">hr.leave.allocation</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form_manager"/>
+        <field name="arch" type="xml">
+            <!-- 來源加班單：加在 notes 欄位之前 -->
+            <xpath expr="//field[@name='notes']" position="before">
+                <field name="overtime_ids"
+                       string="來源加班單"
+                       readonly="1"
+                       invisible="not overtime_ids"
+                       widget="many2many_tags"/>
+            </xpath>
+            <!-- state=validate 時鎖定有效期間 -->
+            <xpath expr="//div[@name='validity']" position="attributes">
+                <attribute name="readonly">state == 'validate'</attribute>
+            </xpath>
+            <!-- state=validate 時鎖定分配天數/時數 -->
+            <xpath expr="//div[@name='duration_display']" position="attributes">
+                <attribute name="readonly">state == 'validate'</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
