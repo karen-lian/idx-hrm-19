@@ -37,7 +37,7 @@
         <field name="model">hr.overtime</field>
         <field name="inherit_id" ref="idx_hrm_19.view_hr_overtime_form"/>
         <field name="arch" type="xml">
-<!--             在 header 的 退回 按鈕之後，加入 核准 / 拒絕 -->
+            <!-- 在 header 的 退回 按鈕之後，加入 核准 / 拒絕 -->
             <xpath expr="//button[@name='action_return']" position="after">
                 <button name="action_approve" string="核准" type="object"
                         class="btn-success"
@@ -47,9 +47,12 @@
                         class="btn-danger"
                         invisible="state != 'pending'"/>
             </xpath>
-            <!-- 補休分配起始日改為可寫 -->
-            <xpath expr="//field[@name='leave_validity_start']" position="attributes">
-                <attribute name="readonly">type != 'leave'</attribute>
+            <!-- 在 overtime_type_id 後加入補休分配起始日（僅管理人視角可見且可寫） -->
+            <xpath expr="//field[@name='overtime_type_id']" position="after">
+                <field name="leave_validity_start"
+                       invisible="type != 'leave'"
+                       required="type == 'leave'"
+                       readonly="state not in ('draft', 'pending')"/>
             </xpath>
         </field>
     </record>

@@ -178,3 +178,24 @@ class HrAttendanceOnline(models.Model):
             if reason:
                 body += f"<br/>駁回原因：{reason}"
             rec.message_post(body=body, subtype_xmlid="mail.mt_note")
+
+
+class ResourceCalendar(models.Model):
+    """擴充 resource.calendar：彈性上下班容許分鐘數（僅 fully_fixed 排班適用）"""
+    _inherit = "resource.calendar"
+
+    flexible_attendance_before = fields.Integer(
+        string="彈性上班時間-往前",
+        default=0,
+        help="員工可提前幾分鐘打卡上班（例：30 表示可提前 30 分鐘打卡）",
+    )
+    flexible_attendance = fields.Integer(
+        string="彈性上班時間-往後",
+        default=0,
+        help="員工可延後幾分鐘打卡上班（例：30 表示可延後 30 分鐘打卡）",
+    )
+    attendance_overtime = fields.Integer(
+        string="容許下班晚打卡",
+        default=0,
+        help="員工下班後可延後幾分鐘打卡（例：30 表示可延後 30 分鐘打卡下班）",
+    )

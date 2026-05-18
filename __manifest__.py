@@ -36,6 +36,7 @@
         "views/hr_attendance_ext_views.xml",
         "views/hr_overtime_request_form.xml",
         "views/hr_overtime_manager_views.xml",
+        "views/hr_leave_allocation_ext_views.xml",
         "views/resource_calendar_views_ext.xml",
         "views/hr_public_holiday_wizard_views.xml",
         "views/menus.xml",

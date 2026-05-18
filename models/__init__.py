@@ -2,7 +2,7 @@ from . import res_config_settings
 from . import hr_attendance_setting
 from . import hr_late_early_criterion
 from . import hr_overtime
-from . import hr_overtime_new
+from . import hr_overtime_request
 from . import hr_labor_health_insurance
 from . import hr_income_tax_pivot
 from . import hr_annual_leave
@@ -11,12 +11,12 @@ from . import cron_methods
 from . import hr_overtime_calculation
 from . import hr_employee
 from . import hr_employee_foreign
-from . import hr_version_ext
+from . import hr_version
 from . import hr_dependents
-from . import hr_attendance_ext
+from . import hr_attendance
 from . import hr_attendance_abnormal
-from . import hr_leave_ext
-from . import hr_payslip_ext
+from . import hr_leave
+from . import hr_payslip
 from . import hr_income_tax_report
 from . import hr_onboarding_offboarding
 from . import hr_holiday_import

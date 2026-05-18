@@ -43,7 +43,7 @@ class HrVersion(models.Model):
                     "employee_id": emp.id,
                     "holiday_status_id": lt.id,
                     "number_of_days": days,
-                    "allocation_type": "fixed",
+                    "allocation_type": "regular",
                     "state": "validate",
                     "is_auto_allocated": True,
                 })

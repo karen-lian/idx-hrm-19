@@ -34,6 +34,10 @@
                         <setting string="加班申請預設類型">
                             <field name="overtime_type" widget="radio"/>
                         </setting>
+                        <setting string="加班補休應於幾日內休畢">
+                            <field name="overtime_limit_day"/>
+                            <span> 天</span>
+                        </setting>
                     </block>
                 </app>
             </xpath>

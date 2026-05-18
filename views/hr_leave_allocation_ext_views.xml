@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         hr.leave.allocation form 擴充
+         - 顯示來源加班單（有資料才顯示）
+         - state=validate 時鎖定日期及時數
+    ============================================================ -->
+
+    <!-- 一般員工視角（hr_leave_allocation_view_form） -->
+    <record id="view_hr_leave_allocation_ext_form" model="ir.ui.view">
+        <field name="name">hr.leave.allocation.ext.form</field>
+        <field name="model">hr.leave.allocation</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form"/>
+        <field name="arch" type="xml">
+            <!-- 來源加班單：加在 notes 欄位之前 -->
+            <xpath expr="//field[@name='notes']" position="before">
+                <field name="overtime_ids"
+                       string="來源加班單"
+                       readonly="1"
+                       invisible="not overtime_ids"
+                       widget="many2many_tags"/>
+            </xpath>
+            <!-- 有效期間：保留原生 accrual 條件，額外加上 state=validate 一律唯讀 -->
+            <xpath expr="//field[@name='date_from']" position="attributes">
+                <attribute name="readonly">allocation_type == 'accrual' and state != 'confirm' or state == 'validate'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='date_to']" position="attributes">
+                <attribute name="readonly">allocation_type == 'accrual' and state != 'confirm' or state == 'validate'</attribute>
+            </xpath>
+            <!-- 天數：原生 state!='confirm' and not is_officer，補上 state='validate' 一律唯讀 -->
+            <xpath expr="//field[@name='number_of_days_display']" position="attributes">
+                <attribute name="readonly">state != 'confirm' and not is_officer or state == 'validate'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='number_of_hours_display']" position="attributes">
+                <attribute name="readonly">state != 'confirm' and not is_officer or state == 'validate'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- 管理員視角（hr_leave_allocation_view_form_manager） -->
+    <record id="view_hr_leave_allocation_ext_form_manager" model="ir.ui.view">
+        <field name="name">hr.leave.allocation.ext.form.manager</field>
+        <field name="model">hr.leave.allocation</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form_manager"/>
+        <field name="arch" type="xml">
+            <!-- 來源加班單：加在 notes 欄位之前 -->
+            <xpath expr="//field[@name='notes']" position="before">
+                <field name="overtime_ids"
+                       string="來源加班單"
+                       readonly="1"
+                       invisible="not overtime_ids"
+                       widget="many2many_tags"/>
+            </xpath>
+            <!-- manager view 的 date_from/date_to 原生已移除 invisible，補上 validate 鎖定 -->
+            <xpath expr="//field[@name='date_from']" position="attributes">
+                <attribute name="readonly">allocation_type == 'accrual' or state == 'validate'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='date_to']" position="attributes">
+                <attribute name="readonly">allocation_type == 'accrual' or state == 'validate'</attribute>
+            </xpath>
+            <!-- 天數：原生 state!='confirm' and not is_officer，補上 state='validate' 一律唯讀 -->
+            <xpath expr="//field[@name='number_of_days_display']" position="attributes">
+                <attribute name="readonly">state != 'confirm' and not is_officer or state == 'validate'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='number_of_hours_display']" position="attributes">
+                <attribute name="readonly">state != 'confirm' and not is_officer or state == 'validate'</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

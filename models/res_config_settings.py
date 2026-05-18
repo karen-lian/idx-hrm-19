@@ -249,6 +249,11 @@ class ResConfigSettings(models.TransientModel):
         default="leave",
         config_parameter="idx_hrm.overtime_type",
     )
+    overtime_limit_day = fields.Integer(
+        string="加班補休應於幾日內休畢",
+        default=180,
+        config_parameter="idx_hrm.overtime_limit_day",
+    )
 
     @api.constrains("overtime_hour_month", "overtime_hour_three_month")
     def _check_overtime_month_limit(self):
